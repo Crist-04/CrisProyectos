@@ -11,10 +11,12 @@ import java.sql.Date;
 import java.sql.ResultSet;
 import java.sql.Types;
 import java.util.ArrayList;
+import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.CallableStatementCallback;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Transactional;
 
 @Repository
 public class UsuarioDAOImplementation implements IUsuarioDAO {
@@ -183,20 +185,17 @@ public class UsuarioDAOImplementation implements IUsuarioDAO {
                                 estado.setIdEstado(resultSet.getInt("IdEstado"));
                                 estado.setNombre(resultSet.getString("NombreEstado"));
 
-                                
                                 Municipio municipio = new Municipio();
                                 municipio.setIdMunicipio(resultSet.getInt("IdMunicipio"));
                                 municipio.setNombre(resultSet.getString("NombreMunicipio"));
                                 municipio.setEstado(estado);  // Asignar el Estado al Municipio
 
-                                
                                 Colonia colonia = new Colonia();
                                 colonia.setIdColonia(resultSet.getInt("IdColonia"));
                                 colonia.setNombre(resultSet.getString("NombreColonia"));
                                 colonia.setCodigoPostal(resultSet.getString("CodigoPostal"));
                                 colonia.setMunicipio(municipio);  // Asignar el Municipio a la Colonia
 
-                                
                                 direccion.setColonia(colonia);
 
                                 usuario.getDirecciones().add(direccion);
@@ -332,6 +331,51 @@ public class UsuarioDAOImplementation implements IUsuarioDAO {
                 });
 
         return result;
+    }
+
+    @Transactional
+    @Override
+    public Result AddAll(List<Usuario> usuarios) {
+        Result result = new Result();
+
+        try {
+            jdbcTemplate.batchUpdate("{CALL UsuariosAdd(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?) }",
+                    usuarios,
+                    usuarios.size(),
+                    (callableStatement, usuario) -> {
+
+                        callableStatement.setString(1, usuario.getNombre());
+                        callableStatement.setString(2, usuario.getApellidoPaterno());
+                        callableStatement.setString(3, usuario.getApellidoMaterno());
+                        callableStatement.setString(4, usuario.getUserName());
+                        callableStatement.setString(5, usuario.getEmail());
+                        callableStatement.setString(6, usuario.getPassword());
+
+                        java.sql.Date sqlDate = new java.sql.Date(usuario.getFechaNacimiento().getTime());
+                        callableStatement.setDate(7, sqlDate);
+
+                        callableStatement.setString(8, usuario.getSexo());
+                        callableStatement.setString(9, usuario.getTelefono());
+                        callableStatement.setString(10, usuario.getCelular());
+                        callableStatement.setString(11, usuario.getCURP());
+                        callableStatement.setInt(12, usuario.getRol().getIdRol());
+
+//                        callableStatement.setString(13, usuario.getDirecciones().get(0).getCalle());
+//                        callableStatement.setString(14, usuario.getDirecciones().get(0).getNumeroInterior());
+//                        callableStatement.setString(15, usuario.getDirecciones().get(0).getNumeroExterior());
+//                        callableStatement.setInt(16, usuario.getDirecciones().get(0).getColonia().getIdColonia());
+//
+//                        callableStatement.setString(17, usuario.getImagen());
+
+                    });
+            result.correct = true;
+        } catch (Exception ex) {
+            result.correct = false;
+            result.errorMessage = ex.getLocalizedMessage();
+            result.ex = ex;
+        }
+        return result;
+
     }
 
 }
