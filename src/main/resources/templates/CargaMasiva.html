@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout}">
+    <head>
+        <title>Carga Masiva</title>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    </head>
+    <body layout:fragment="content">
+        <br>
+        <div class="container" style="text-align: center">
+            <h3>Seleccione el tipo de archivo</h3>
+            <button type="button" class="btn btn-primary" id="btnTxt">TXT</button>
+            <button type="button" class="btn btn-success" id="btnXls">XLS</button>
+        </div>
+        <br>
+        <div class="container" style="text-align: center;">
+            <form id="formCargaMasiva" th:action="@{/usuario/cargaMasiva}" method="post" enctype="multipart/form-data" style="display: none;">
+                <div class="mb-3">
+                    <label for="archivo" class="form-label">Seleccione el archivo:</label>
+                    <input type="file" class="form-control" id="archivo" name="archivo" accept="" style="max-width: 400px; margin: 0 auto;">
+                    <small id="tipoArchivo" class="form-text text-muted"></small>
+                </div>
+                <button type="submit" class="btn btn-primary" id="btnCargaMasiva">
+                    Cargar Archivo
+                </button>
+            </form>
+        </div>
+
+        <!-- SECCIÓN DE MENSAJES -->
+        <div class="container mt-4" th:if="${successMessage}">
+            <div class="alert alert-success alert-dismissible fade show" role="alert">
+                <strong>¡Éxito!</strong> <span th:text="${successMessage}"></span>
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+        </div>
+
+        <div class="container mt-4" th:if="${errorMessage}">
+            <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                <strong>Error</strong> <span th:text="${errorMessage}"></span>
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+        </div>
+
+        <!-- TABLA DE ERRORES -->
+        <div class="container mt-4" th:if="${errores != null and !errores.isEmpty()}">
+            <h4 class="text-danger">Errores encontrados en el archivo:</h4>
+            <div class="table-responsive">
+                <table class="table table-striped table-bordered">
+                    <thead class="table-danger">
+                        <tr>
+                            <th>Línea</th>
+                            <th>Campo</th>
+                            <th>Descripción del Error</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr th:each="error : ${errores}">
+                            <td th:text="${error.linea}"></td>
+                            <td th:text="${error.campo}"></td>
+                            <td th:text="${error.descripcion}"></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+
+
+        <div class="container mt-4 text-center" th:if="${mostrarBotonProcesar}">
+            <a th:href="@{/usuario/cargaMasiva/procesar}" class="btn btn-success btn-lg">
+                <i class="bi bi-check-circle"></i> Procesar Carga Masiva
+            </a>
+            <p class="text-muted mt-2">
+                Se procesarán <strong th:text="${usuarios.size()}"></strong> registros
+            </p> 
+        </div>
+
+        <script>
+            const btnTxt = document.getElementById('btnTxt');
+            const btnXls = document.getElementById('btnXls');
+            const btnCargaMasiva = document.getElementById('btnCargaMasiva');
+            const formCargaMasiva = document.getElementById('formCargaMasiva');
+            const inputArchivo = document.getElementById('archivo');
+            const tipoArchivo = document.getElementById('tipoArchivo');
+
+            let tipoSeleccionado = '';
+
+            btnTxt.addEventListener('click', function () {
+                tipoSeleccionado = 'txt';
+                formCargaMasiva.style.display = 'block';
+                btnCargaMasiva.className = 'btn btn-primary';
+                inputArchivo.accept = '.txt';
+                tipoArchivo.innerHTML = 'Solo se permiten archivos .txt<br><strong>Formato:</strong> nombre|apellidoPaterno|apellidoMaterno|userName|Email|Password|...';
+                inputArchivo.value = '';
+            });
+
+            btnXls.addEventListener('click', function () {
+                tipoSeleccionado = 'xls';
+                formCargaMasiva.style.display = 'block';
+                btnCargaMasiva.className = 'btn btn-success';
+                inputArchivo.accept = '.xls,.xlsx';
+                tipoArchivo.textContent = 'Solo se permiten archivos .xls o .xlsx';
+                inputArchivo.value = '';
+            });
+
+            inputArchivo.addEventListener('change', function (e) {
+                const archivo = e.target.files[0];
+                if (archivo) {
+                    const extension = archivo.name.split('.').pop().toLowerCase();
+
+                    if (tipoSeleccionado === 'txt' && extension !== 'txt') {
+                        Swal.fire({
+                            icon: "error",
+                            title: "Archivo Incorrecto",
+                            text: "Debe ser un archivo TXT"
+                        });
+                        inputArchivo.value = '';
+                        return;
+                    }
+
+                    if (tipoSeleccionado === 'xls' && extension !== 'xls' && extension !== 'xlsx') {
+                        Swal.fire({
+                            icon: "error",
+                            title: "Archivo Incorrecto",
+                            text: "Debe ser un archivo XLS o XLSX"
+                        });
+                        inputArchivo.value = '';
+                        return;
+                    }
+                }
+            });
+
+            formCargaMasiva.addEventListener('submit', function (e) {
+                const archivo = inputArchivo.files[0];
+                if (!archivo) {
+                    e.preventDefault();
+                    Swal.fire({
+                        icon: "error",
+                        title: "No seleccionó un archivo",
+                        text: "Debe seleccionar un archivo"
+                    });
+                    return;
+                }
+
+                Swal.fire({
+                    title: 'Procesando archivo...',
+                    text: 'Por favor espere',
+                    allowOutsideClick: false,
+                    didOpen: () => {
+                        Swal.showLoading();
+                    }
+                });
+            });
+
+            window.addEventListener('DOMContentLoaded', function () {
+                Swal.close();
+            });
+        </script>
+    </body>
+</html>

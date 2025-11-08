@@ -1,0 +1,11 @@
+{
+    "elements": {},
+    "attributes": {
+        "th:text": {
+            "context": "span"
+        },
+        "xmlms:th": {
+            "context": "html"
+        }
+    }
+}
