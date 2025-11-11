@@ -1,4 +1,3 @@
-
 package com.digis01.CAlvarezProgramacionNCapasOctubre2025.JPA;
 
 import jakarta.persistence.Column;
@@ -11,25 +10,28 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 
 @Entity
-@Table(name = "USUARIOS")
+@Table(name = "USUARIO")
 public class UsuarioJPA {
-    
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "idusuario")
     private int IdUsuario;
-    
+
     @Column(name = "nombre")
     private String Nombre;
-    
+
+    @Column(name = "username")
+    private String Username;
+
     @Column(name = "apellidopaterno")
     private String ApellidoPaterno;
-    
-    @Column (name = "apellidomaterno")
+
+    @Column(name = "apellidomaterno")
     private String ApellidoMaterno;
-    
+
     @ManyToOne
     @JoinColumn(name = "idrol")
     public Rol rol;
-    
+
 }
