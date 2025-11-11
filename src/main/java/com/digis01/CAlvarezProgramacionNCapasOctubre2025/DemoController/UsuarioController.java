@@ -7,6 +7,7 @@ import com.digis01.CAlvarezProgramacionNCapasOctubre2025.DAO.EstadoDAOImplementa
 import com.digis01.CAlvarezProgramacionNCapasOctubre2025.DAO.MunicipioDAOImplementation;
 import com.digis01.CAlvarezProgramacionNCapasOctubre2025.DAO.RolDAOImplementation;
 import com.digis01.CAlvarezProgramacionNCapasOctubre2025.DAO.UsuarioDAOImplementation;
+import com.digis01.CAlvarezProgramacionNCapasOctubre2025.DAO.UsuarioJPADAOImplementation;
 import com.digis01.CAlvarezProgramacionNCapasOctubre2025.ML.Colonia;
 import com.digis01.CAlvarezProgramacionNCapasOctubre2025.ML.Direccion;
 import com.digis01.CAlvarezProgramacionNCapasOctubre2025.ML.ErrorCarga;
@@ -36,7 +37,9 @@ import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.xssf.usermodel.XSSFSheet;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Controller;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.FieldError;
@@ -71,6 +74,10 @@ public class UsuarioController {
     private DireccionDAOImplementation direccionDAOImplementation;
     @Autowired
     private ValidationService validationService;
+    @Autowired
+    private JdbcTemplate jdbcTemplate;
+    @Autowired
+    private UsuarioJPADAOImplementation usuarioJPADAOImplementation;
 
 //    @GetMapping
 //    public String UsuarioIndex(Model model) {
@@ -82,8 +89,9 @@ public class UsuarioController {
     public String UsuarioIndex(Model model) {
 
         Result result = usuarioDAOImplementation.GetAll();
-
         Result rolesResult = rolDAOImplementation.GetAll();
+        
+        Result resultJPA = usuarioJPADAOImplementation.GetAll();
 
         model.addAttribute("usuarios", result.objects);
         model.addAttribute("roles", rolesResult.objects);
@@ -101,17 +109,253 @@ public class UsuarioController {
     public String CargaMasiva() {
         return "CargaMasiva";
     }
-    
-    
-@GetMapping("/cargaMasiva/procesar")
+
+    @GetMapping("/cargaMasiva/procesar")
     public String CargaMasivaProcesar(HttpSession session) {
         String path = session.getAttribute("archivoCargaMasiva").toString();
         session.removeAttribute("archivoCargaMasiva");
 
         // Inserción con carga masiva
+        
+        
+        
 
         return "CargaMasiva";
     }
+//    @GetMapping("/cargaMasiva/procesar")
+//    @Transactional
+//    public String CargaMasivaProcesar(HttpSession session, RedirectAttributes redirectAttributes) {
+//
+//        String path = session.getAttribute("archivoCargaMasiva").toString();
+//        session.removeAttribute("archivoCargaMasiva");
+//
+//        
+//        String extension = path.substring(path.lastIndexOf(".") + 1).toLowerCase();
+//
+//        File archivo = new File(path);
+//        Result result;
+//
+//       
+//        if (extension.equals("txt")) {
+//            result = LecturaArchivoTXTYGuardar(archivo);
+//        } else if (extension.equals("xlsx")) {
+//            result = LecturaArchivoXLSXYGuardar(archivo);
+//        } else {
+//            redirectAttributes.addFlashAttribute("errorMessage", "Tipo de archivo no válido. Solo TXT o XLSX.");
+//            return "redirect:/usuario/cargaMasiva";
+//        }
+//
+//        
+//        if (result.correct) {
+//            List<Usuario> usuarios = (List<Usuario>) result.object;
+//            redirectAttributes.addFlashAttribute("successMessage",
+//                    "Carga completada: " + usuarios.size() + " usuarios insertados correctamente");
+//        } else {
+//            List<ErrorCarga> errores = (List<ErrorCarga>) result.object;
+//            redirectAttributes.addFlashAttribute("erroresCarga", errores);
+//            redirectAttributes.addFlashAttribute("errorMessage", result.errorMessage);
+//        }
+//
+//        return "redirect:/usuario";
+//    }
+//
+//
+//    public Result LecturaArchivoTXTYGuardar(File archivo) {
+//        Result result = new Result();
+//        List<Usuario> usuarios = new ArrayList<>();
+//        List<ErrorCarga> errores = new ArrayList<>();
+//
+//        try (InputStream inputStream = new FileInputStream(archivo); BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(inputStream));) {
+//
+//            String linea = "";
+//            int lineaNumero = 0;
+//
+//            while ((linea = bufferedReader.readLine()) != null) {
+//                lineaNumero++;
+//
+//                if (linea.trim().isEmpty()) {
+//                    continue;
+//                }
+//
+//                String[] campos = linea.split("\\|", -1);
+//
+//                if (campos.length != 12) {
+//                    ErrorCarga error = new ErrorCarga();
+//                    error.linea = lineaNumero;
+//                    error.campo = "General";
+//                    error.descripcion = "Se esperan 12 campos, se encontraron " + campos.length;
+//                    errores.add(error);
+//                    continue;
+//                }
+//
+//                try {
+//                    Usuario usuario = new Usuario();
+//                    usuario.setNombre(campos[0].trim());
+//                    usuario.setApellidoPaterno(campos[1].trim());
+//                    usuario.setApellidoMaterno(campos[2].trim());
+//                    usuario.setUserName(campos[3].trim());
+//                    usuario.setEmail(campos[4].trim());
+//                    usuario.setPassword(campos[5].trim());
+//                    usuario.setCelular(campos[6].trim());
+//                    usuario.setTelefono(campos[7].trim());
+//                    usuario.setCURP(campos[8].trim());
+//                    usuario.setSexo(campos[9].trim());
+//
+//                    SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+//                    usuario.setFechaNacimiento(sdf.parse(campos[10].trim()));
+//
+//                    Rol rol = new Rol();
+//                    rol.setIdRol(Integer.parseInt(campos[11].trim()));
+//                    usuario.setRol(rol);
+//
+//                   
+//                    usuario.setDirecciones(new ArrayList<>());
+//                    Direccion direccionTemporal = new Direccion();
+//                    direccionTemporal.setCalle("");
+//                    direccionTemporal.setNumeroInterior("");
+//                    direccionTemporal.setNumeroExterior("S/N");
+//
+//                    Colonia coloniaTemporal = new Colonia();
+//                    coloniaTemporal.setIdColonia(1110);
+//                    direccionTemporal.setColonia(coloniaTemporal);
+//
+//                    usuario.getDirecciones().add(direccionTemporal);
+//
+//                    
+//                    Result addResult = usuarioDAOImplementation.Add(usuario);
+//
+//                    if (addResult.correct) {
+//                        usuarios.add(usuario);
+//                    } else {
+//                        ErrorCarga error = new ErrorCarga();
+//                        error.linea = lineaNumero;
+//                        error.campo = "Base de datos";
+//                        error.descripcion = addResult.errorMessage;
+//                        errores.add(error);
+//                    }
+//
+//                } catch (Exception ex) {
+//                    ErrorCarga error = new ErrorCarga();
+//                    error.linea = lineaNumero;
+//                    error.campo = "General";
+//                    error.descripcion = ex.getMessage();
+//                    errores.add(error);
+//                }
+//            }
+//
+//        } catch (Exception ex) {
+//            result.correct = false;
+//            result.errorMessage = "Error al leer archivo: " + ex.getMessage();
+//            return result;
+//        }
+//
+//        if (errores.isEmpty()) {
+//            result.correct = true;
+//            result.object = usuarios;
+//            result.errorMessage = "Todos los usuarios se cargaron correctamente";
+//        } else {
+//            result.correct = false;
+//            result.object = errores;
+//            result.errorMessage = "Se encontraron " + errores.size() + " errores durante la carga";
+//        }
+//
+//        return result;
+//    }
+//
+//
+//    public Result LecturaArchivoXLSXYGuardar(File archivo) {
+//        Result result = new Result();
+//        List<Usuario> usuarios = new ArrayList<>();
+//        List<ErrorCarga> errores = new ArrayList<>();
+//
+//        try (InputStream inputStream = new FileInputStream(archivo); XSSFWorkbook workbook = new XSSFWorkbook(inputStream)) {
+//
+//            XSSFSheet workSheet = workbook.getSheetAt(0);
+//            int lineaNumero = 0;
+//
+//            for (Row row : workSheet) {
+//                lineaNumero++;
+//
+//               
+//                if (lineaNumero == 1 && row.getCell(0).getCellType().toString().equals("STRING")) {
+//                    continue;
+//                }
+//
+//                try {
+//                    Usuario usuario = new Usuario();
+//                    usuario.setNombre(row.getCell(0).toString().trim());
+//                    usuario.setApellidoPaterno(row.getCell(1).toString().trim());
+//                    usuario.setApellidoMaterno(row.getCell(2).toString().trim());
+//                    usuario.setUserName(row.getCell(3).toString().trim());
+//                    usuario.setEmail(row.getCell(4).toString().trim());
+//                    usuario.setPassword(row.getCell(5).toString().trim());
+//
+//                    DecimalFormat df = new DecimalFormat("#");
+//                    usuario.setTelefono(df.format(row.getCell(6).getNumericCellValue()));
+//                    usuario.setCelular(df.format(row.getCell(7).getNumericCellValue()));
+//
+//                    usuario.setCURP(row.getCell(8).toString().trim());
+//                    usuario.setSexo(row.getCell(9).toString().trim());
+//                    usuario.setFechaNacimiento(row.getCell(10).getDateCellValue());
+//
+//                    Rol rol = new Rol();
+//                    int idRol = (int) row.getCell(11).getNumericCellValue();
+//                    rol.setIdRol(idRol);
+//                    usuario.setRol(rol);
+//
+//                   
+//                    usuario.setDirecciones(new ArrayList<>());
+//                    Direccion direccionTemporal = new Direccion();
+//                    direccionTemporal.setCalle("");
+//                    direccionTemporal.setNumeroInterior("");
+//                    direccionTemporal.setNumeroExterior("S/N");
+//
+//                    Colonia coloniaTemporal = new Colonia();
+//                    coloniaTemporal.setIdColonia(1110);
+//                    direccionTemporal.setColonia(coloniaTemporal);
+//
+//                    usuario.getDirecciones().add(direccionTemporal);
+//
+//                    
+//                    Result addResult = usuarioDAOImplementation.Add(usuario);
+//
+//                    if (addResult.correct) {
+//                        usuarios.add(usuario);
+//                    } else {
+//                        ErrorCarga error = new ErrorCarga();
+//                        error.linea = lineaNumero;
+//                        error.campo = "Base de datos";
+//                        error.descripcion = addResult.errorMessage;
+//                        errores.add(error);
+//                    }
+//
+//                } catch (Exception ex) {
+//                    ErrorCarga error = new ErrorCarga();
+//                    error.linea = lineaNumero;
+//                    error.campo = "General";
+//                    error.descripcion = ex.getMessage();
+//                    errores.add(error);
+//                }
+//            }
+//
+//        } catch (Exception ex) {
+//            result.correct = false;
+//            result.errorMessage = "Error al leer archivo XLSX: " + ex.getMessage();
+//            return result;
+//        }
+//
+//        if (errores.isEmpty()) {
+//            result.correct = true;
+//            result.object = usuarios;
+//            result.errorMessage = "Todos los usuarios se cargaron correctamente";
+//        } else {
+//            result.correct = false;
+//            result.object = errores;
+//            result.errorMessage = "Se encontraron " + errores.size() + " errores durante la carga";
+//        }
+//
+//        return result;
+//    }
 
     @PostMapping("/cargaMasiva")
     public String CargaMasiva(@RequestParam("archivo") MultipartFile archivo, Model model, HttpSession session) throws IOException {
@@ -174,8 +418,7 @@ public class UsuarioController {
     public List<Usuario> LecturaArchivoTXT(File archivo) {
         List<Usuario> usuarios = new ArrayList<>();
 
-        try (InputStream fileInputStream = new FileInputStream(archivo); 
-             BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(fileInputStream));) {
+        try (InputStream fileInputStream = new FileInputStream(archivo); BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(fileInputStream));) {
             String linea = "";
 
             while ((linea = bufferedReader.readLine()) != null) {
@@ -212,8 +455,7 @@ public class UsuarioController {
     public List<Usuario> LecturaArchivoXLSX(File archivo) {
         List<Usuario> usuarios = new ArrayList<>();
 
-        try (InputStream fileInputStream = new FileInputStream(archivo);
-             XSSFWorkbook workbook = new XSSFWorkbook(fileInputStream)) {
+        try (InputStream fileInputStream = new FileInputStream(archivo); XSSFWorkbook workbook = new XSSFWorkbook(fileInputStream)) {
             XSSFSheet workSheet = workbook.getSheetAt(0);
             for (Row row : workSheet) {
                 Usuario usuario = new Usuario();
