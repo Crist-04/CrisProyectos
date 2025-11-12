@@ -9,7 +9,7 @@ public class Result {
     public Object object;
     public List<Object> objects;
     
-    public Result() {
-        this.correct = false;
-    }
+//    public Result() {
+//        this.correct = false;
+//    }
 }

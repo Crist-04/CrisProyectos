@@ -1,5 +1,6 @@
 package com.digis01.CAlvarezProgramacionNCapasOctubre2025.JPA;
 
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -7,7 +8,11 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
 
 @Entity
 @Table(name = "USUARIO")
@@ -16,22 +21,46 @@ public class UsuarioJPA {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "idusuario")
-    private int IdUsuario;
+    public int IdUsuario;
 
     @Column(name = "nombre")
-    private String Nombre;
+    public String Nombre;
 
     @Column(name = "username")
-    private String Username;
+    public String Username;
 
     @Column(name = "apellidopaterno")
-    private String ApellidoPaterno;
+    public String ApellidoPaterno;
 
     @Column(name = "apellidomaterno")
-    private String ApellidoMaterno;
+    public String ApellidoMaterno;
+
+    @Column(name = "email")
+    public String Email;
+
+    @Column(name = "password")
+    public String Password;
+
+    @Column(name = "fechanacimiento")
+    public Date FechaNacimiento;
+
+    @Column(name = "sexo")
+    public String Sexo;
+
+    @Column(name = "telefono")
+    public String Telefono;
+
+    @Column(name = "celular")
+    public String Celular;
+
+    @Column(name = "curp")
+    public String CURP;
 
     @ManyToOne
     @JoinColumn(name = "idrol")
-    public Rol rol;
+    public RolJPA rol;
+
+    @OneToMany(mappedBy = "UsuarioJPA", cascade = CascadeType.ALL, orphanRemoval = true)
+    public List<DireccionJPA> DireccionesJPA = new ArrayList<>();
 
 }

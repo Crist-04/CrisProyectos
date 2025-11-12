@@ -94,6 +94,7 @@ public class UsuarioController {
         Result resultJPA = usuarioJPADAOImplementation.GetAll();
 
         model.addAttribute("usuarios", result.objects);
+        model.addAttribute("usuarios", resultJPA.objects);
         model.addAttribute("roles", rolesResult.objects);
         model.addAttribute("usuarioBusqueda", new Usuario());
 

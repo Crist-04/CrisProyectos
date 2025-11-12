@@ -9,7 +9,7 @@ import jakarta.persistence.Table;
 
 @Entity
 @Table(name = "rol")
-public class Rol {
+public class RolJPA {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
