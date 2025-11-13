@@ -7,7 +7,6 @@
         <title>UsuariosIndex</title>
     <th:block layout:fragment="extra-css">
         <style>
-            
             body {
                 background: #f5f7ff;
                 min-height: 100vh;
@@ -112,6 +111,24 @@
             td {
                 vertical-align: middle;
             }
+
+            .direccion-item {
+                padding: 5px 0;
+                border-bottom: 1px solid #e9ecef;
+            }
+
+            .direccion-item:last-child {
+                border-bottom: none;
+            }
+
+            .badge-direccion {
+                background-color: #e3f2fd;
+                color: #1976d2;
+                padding: 2px 8px;
+                border-radius: 4px;
+                font-size: 0.75rem;
+                font-weight: 500;
+            }
         </style>
     </th:block>
 </head>
@@ -152,65 +169,101 @@
                         <i class="bi bi-x-circle"></i>
                     </a>
                 </div>
-                <div class="search-bar">
-                    <div class="col text-center">
-                        <button type="button" class="btn btn-primary" onclick="window.location.href = '/usuario/add'">
-                            <i class="bi bi-person-plus-fill"></i> Agregar Nuevo Usuario
-                        </button>
-                    </div>
-                    <br>
-                    <div class="col text-center">
-                        <button type="button" class="btn btn-dark" onclick="window.location.href = '/usuario/cargaMasiva'">
-                            Cargas Masivas
-                        </button>
-                    </div>
-                </div>
             </form>
+            <div class="row mt-3">
+                <div class="col text-center">
+                    <button type="button" class="btn btn-primary" onclick="window.location.href = '/usuario/add'">
+                        <i class="bi bi-person-plus-fill"></i> Agregar Nuevo Usuario
+                    </button>
+                </div>
+                <div class="col text-center">
+                    <button type="button" class="btn btn-dark" onclick="window.location.href = '/usuario/cargaMasiva'">
+                        <i class="bi bi-upload"></i> Cargas Masivas
+                    </button>
+                </div>
+            </div>
         </div>
-        <div class="p-3" style="max-height: 400px; overflow-y: auto;" >
-            <table class="table table-hover align-middle text-center mt-2" >
-                <thead >
-                    <tr >
+        <div class="p-3" style="max-height: 400px; overflow-y: auto;">
+            <table class="table table-hover align-middle text-center mt-2">
+                <thead>
+                    <tr>
                         <th>Acciones</th>
                         <th>Usuario</th>
                         <th>Datos de contacto</th>
-                        <th>Dirección</th>                       
+                        <th>Direcciones</th>                       
                     </tr>
                 </thead>
-                <tbody >
+                <tbody>
                     <tr th:each="usuario: ${usuarios}">
                         <td>
-                            <button class="btn btn-sm btn-info text-white" th:onclick="'window.location.href=\'/usuario/detalle/' + ${usuario.IdUsuario} + '\''">
-                                <i class="bi bi-pencil-square"></i> Editar Usuario
+                            <button class="btn btn-sm btn-info text-white mb-1" 
+                                    th:onclick="'window.location.href=\'/usuario/detalle/' + ${usuario.idUsuario} + '\''">
+                                <i class="bi bi-pencil-square"></i> Editar
                             </button>
-                            <button class="btn btn-sm btn-danger"><i class="bi bi-trash"></i> Eliminar Usuario</button>
+                            <button class="btn btn-sm btn-danger">
+                                <i class="bi bi-trash"></i> Eliminar
+                            </button>
                         </td>
                         <td class="text-start">
                             <div class="d-flex align-items-center">
-                                <img th:if="${usuario.Imagen != null && !usuario.Imagen.isEmpty()}" 
-                                     th:src="'data:image/png;base64,' + ${usuario.Imagen}" 
+                                <img th:if="${usuario.imagen != null && !usuario.imagen.isEmpty()}" 
+                                     th:src="'data:image/png;base64,' + ${usuario.imagen}" 
                                      class="avatar" 
                                      alt="Foto de perfil">
-                                <img th:if="${usuario.Imagen == null || usuario.Imagen.isEmpty()}" 
+                                <img th:if="${usuario.imagen == null || usuario.imagen.isEmpty()}" 
                                      src="https://via.placeholder.com/40" 
                                      class="avatar" 
                                      alt="Sin foto">
                                 <div>
-                                    <strong th:text="|${usuario.Nombre}  ${usuario.ApellidoPaterno}  ${usuario.ApellidoMaterno}|">Nombre Usuario</strong><br>
-                                    <small class="text-muted" th:text="|@${usuario.UserName}|">@username</small>
+                                    <strong th:text="${usuario.nombre} + ' ' + ${usuario.apellidoPaterno} + ' ' + ${usuario.apellidoMaterno}">Nombre Usuario</strong><br>
+                                    <small class="text-muted" th:text="'@' + ${usuario.userName}">@username</small>
                                 </div>
                             </div>
                         </td>
                         <td class="text-start">
-                            <div><i class="bi bi-envelope me-1 text-primary"></i><span th:text="${usuario.Email}">email@ejemplo.com</span></div>
-                            <div><i class="bi bi-telephone me-1 text-success"></i><span th:text="${usuario.Telefono}">-</span></div>
-                            <div><i class="bi bi-phone me-1 text-info"></i><span th:text="${usuario.Celular}">-</span></div>
+                            <div><i class="bi bi-envelope me-1 text-primary"></i><span th:text="${usuario.email}">email@ejemplo.com</span></div>
+                            <div><i class="bi bi-telephone me-1 text-success"></i><span th:text="${usuario.telefono}">-</span></div>
+                            <div><i class="bi bi-phone me-1 text-info"></i><span th:text="${usuario.celular}">-</span></div>
                         </td>
                         <td class="text-start">
-                            <div th:each="direccion: ${usuario.Direcciones}">
-                                <small th:text="|${direccion.Calle}, ${direccion.NumeroExterior} ${direccion.NumeroInterior != null ? 'Int. ' + direccion.NumeroInterior : ''}|">
-                                    Dirección completa
-                                </small>
+                            <!-- Verificar si hay direcciones -->
+                            <div th:if="${usuario.direcciones != null && !usuario.direcciones.isEmpty()}">
+                                <div th:each="direccion, iterStat : ${usuario.direcciones}" class="direccion-item">
+                                    <span class="badge-direccion" th:text="'Dir. ' + ${iterStat.count}">Dir. 1</span>
+                                    <div class="mt-1">
+                                        <i class="bi bi-geo-alt-fill text-danger me-1"></i>
+                                        <small>
+                                            <strong th:text="${direccion.calle} + ' #' + ${direccion.numeroExterior}">Calle y número</strong>
+                                            <span th:if="${direccion.numeroInterior != null && !direccion.numeroInterior.isEmpty()}" 
+                                                  th:text="' Int. ' + ${direccion.numeroInterior}"></span>
+                                        </small>
+                                    </div>
+                                    <!-- Mostrar colonia y código postal -->
+                                    <div th:if="${direccion.colonia != null}">
+                                        <small class="text-muted">
+                                            <i class="bi bi-house-door me-1"></i>
+                                            <span th:text="${direccion.colonia.nombre}">Colonia</span>
+                                            <span th:if="${direccion.colonia.codigoPostal != null}" 
+                                                  th:text="', CP: ' + ${direccion.colonia.codigoPostal}"></span>
+                                        </small>
+                                    </div>
+                                    <!-- Mostrar municipio, estado y país -->
+                                    <div th:if="${direccion.colonia != null && direccion.colonia.municipio != null}">
+                                        <small class="text-muted">
+                                            <i class="bi bi-map me-1"></i>
+                                            <span th:text="${direccion.colonia.municipio.nombre}">Municipio</span>
+                                            <span th:if="${direccion.colonia.municipio.estado != null}" 
+                                                  th:text="', ' + ${direccion.colonia.municipio.estado.nombre}"></span>
+                                            <span th:if="${direccion.colonia.municipio.estado != null && direccion.colonia.municipio.estado.pais != null}" 
+                                                  th:text="', ' + ${direccion.colonia.municipio.estado.pais.nombre}"></span>
+                                        </small>
+                                    </div>
+                                </div>
+                            </div>
+                            <!-- Mensaje si no hay direcciones -->
+                            <div th:if="${usuario.direcciones == null || usuario.direcciones.isEmpty()}" class="text-muted">
+                                <i class="bi bi-x-circle me-1"></i>
+                                <small>Sin direcciones registradas</small>
                             </div>
                         </td>                        
                     </tr> 
@@ -219,14 +272,6 @@
         </div>
     </div>
 
-    <!--<script th:if="${errorMessage}" th:inline="javascript">
-        Swal.fire({
-            title: "Error X",
-            text: [[${errorMessage}]],
-            icon: "error",
-            draggable: true
-        });
-    </script> --> 
 <th:block layout:fragment="extra-scripts">
     <script th:if="${successMessage}" th:inline="javascript">
         Swal.fire({
