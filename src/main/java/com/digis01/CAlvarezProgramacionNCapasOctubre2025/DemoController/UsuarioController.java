@@ -750,6 +750,49 @@ public class UsuarioController {
     public Result GetByIdColonia(@PathVariable("idColonia") int idColonia) {
         return codigoPostalDAOImplementation.GetByIdColonia(idColonia);
     }
+    
+    
+    
+    @GetMapping("/detalle/{idUsuario}")
+public String DetalleUsuario(@PathVariable("idUsuario") int idUsuario, Model model) {
+    try {
+        System.out.println("=== Entrando a DetalleUsuario con ID: " + idUsuario + " ===");
+        
+        // Llamar al DAO de JPA para obtener el usuario
+        Result result = usuarioJPADAOImplementation.GetById(idUsuario);
+        
+        System.out.println("Result.correct: " + result.correct);
+        System.out.println("Result.errorMessage: " + result.errorMessage);
+        
+        if (result.correct && result.object != null) {
+            Usuario usuario = (Usuario) result.object;
+            
+            System.out.println("Usuario encontrado: " + usuario.getNombre());
+            System.out.println("Direcciones: " + (usuario.getDirecciones() != null ? usuario.getDirecciones().size() : "null"));
+            
+            model.addAttribute("usuario", usuario);
+            
+            // Cargar roles para el dropdown
+            Result resultRoles = rolJPADAOImplementation.GetAll();
+            model.addAttribute("roles", resultRoles.objects);
+            
+            System.out.println("=== Retornando vista UsuarioDetalle ===");
+            return "UsuarioDetail";
+            
+        } else {
+            System.out.println("=== Usuario no encontrado, redirigiendo ===");
+            model.addAttribute("errorMessage", "Usuario no encontrado: " + result.errorMessage);
+            return "redirect:/usuario";
+        }
+        
+    } catch (Exception ex) {
+        System.out.println("=== ERROR en DetalleUsuario ===");
+        ex.printStackTrace();
+        model.addAttribute("errorMessage", "Error al cargar el detalle: " + ex.getMessage());
+        return "redirect:/usuario";
+    }
+}
+    
 
     @PostMapping("/detalle")
     public String UpdateUsuario(@ModelAttribute("usuario") Usuario usuario, RedirectAttributes redirectAttributes) {

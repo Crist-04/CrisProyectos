@@ -10,4 +10,6 @@ public interface IUsuarioJPA {
     
     Result Add(Usuario usuario);
     
+    Result GetById(int IdUsuario);
+    
 }

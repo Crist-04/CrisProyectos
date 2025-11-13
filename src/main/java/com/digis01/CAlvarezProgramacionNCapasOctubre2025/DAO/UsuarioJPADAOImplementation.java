@@ -96,9 +96,50 @@ public class UsuarioJPADAOImplementation implements IUsuarioJPA {
             result.correct = false;
             result.errorMessage = "Error al agregar usuario: " + ex.getMessage();
             result.ex = ex;
-            ex.printStackTrace(); // Para debugging
+           
         }
 
         return result;
     }
+    
+    
+    @Override
+    @Transactional(readOnly = true)
+    public Result GetById(int idUsuario){
+        Result result = new Result();
+        try{
+            
+            TypedQuery<UsuarioJPA> query = entityManager.createQuery(
+            "SELECT DISTINCT u FROM UsuarioJPA u " +
+                    "LEFT JOIN FETCH u.rol " +
+                    "LEFT JOIN FETCH u.DireccionesJPA d " +
+                    "LEFT JOIN FETCH d.ColoniaJPA c " +
+                    "LEFT JOIN FETCH c.MunicipioJPA m " +
+                    "LEFT JOIN FETCH m.EstadoJPA e " +
+                    "LEFT JOIN FETCH e.PaisJPA " +
+                    "WHERE u.IdUsuario = :IdUsuario",
+                    UsuarioJPA.class
+            );
+            
+            query.setParameter("IdUsuario", idUsuario);
+            
+            UsuarioJPA usuarioJPA = query.getSingleResult();
+            
+            Usuario usuario = modelMapper.map(usuarioJPA, Usuario.class);
+            
+            result.object = usuario;
+            result.correct = true;
+            result.errorMessage = "Id encontrado";
+            
+        }catch(Exception ex){
+            result.correct = false;
+            result.errorMessage = ex.getLocalizedMessage();
+            result.ex = ex;
+        }
+        
+        
+        
+        return result;
+    }
+    
 }
