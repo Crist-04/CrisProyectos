@@ -21,4 +21,14 @@ public class Estado {
     public void setNombre(String Nombre) {
         this.Nombre = Nombre;
     }
+
+    public Pais getPais() {
+        return Pais;
+    }
+
+    public void setPais(Pais Pais) {
+        this.Pais = Pais;
+    }
+    
+    
 }

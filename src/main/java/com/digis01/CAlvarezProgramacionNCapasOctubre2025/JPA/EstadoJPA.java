@@ -26,5 +26,34 @@ public class EstadoJPA {
     @ManyToOne
     @JoinColumn(name = "idpais")
     public PaisJPA PaisJPA;
+
+    public int getIdEstado() {
+        return IdEstado;
+    }
+
+    public void setIdEstado(int IdEstado) {
+        this.IdEstado = IdEstado;
+    }
+
+    public String getNombre() {
+        return Nombre;
+    }
+
+    public void setNombre(String Nombre) {
+        this.Nombre = Nombre;
+    }
+
+    public PaisJPA getPaisJPA() {
+        return PaisJPA;
+    }
+
+    public void setPaisJPA(PaisJPA PaisJPA) {
+        this.PaisJPA = PaisJPA;
+    }
+    
+    
+    
+    
+    
     
 }

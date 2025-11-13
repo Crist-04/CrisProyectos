@@ -58,9 +58,26 @@ public class UsuarioJPA {
 
     @ManyToOne
     @JoinColumn(name = "idrol")
-    public RolJPA rol;
+    private RolJPA rol;
 
     @OneToMany(mappedBy = "UsuarioJPA", cascade = CascadeType.ALL, orphanRemoval = true)
-    public List<DireccionJPA> DireccionesJPA = new ArrayList<>();
+    private List<DireccionJPA> DireccionesJPA = new ArrayList<>();
+    
+    
+    public RolJPA getRol() {
+    return rol;
+}
+
+public void setRol(RolJPA rol) {
+    this.rol = rol;
+}
+
+public List<DireccionJPA> getDireccionesJPA() {
+    return DireccionesJPA;
+}
+
+public void setDireccionesJPA(List<DireccionJPA> direccionesJPA) {
+    this.DireccionesJPA = direccionesJPA;
+}
 
 }
