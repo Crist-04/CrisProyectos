@@ -24,15 +24,23 @@ public class UsuarioJPADAOImplementation implements IUsuarioJPA {
     public Result GetAll() {
         Result result = new Result();
         try {
-            
-            TypedQuery<UsuarioJPA> query = entityManager.createQuery("FROM UsuarioJPA", UsuarioJPA.class);
+
+            TypedQuery<UsuarioJPA> query = entityManager.createQuery(
+                    "SELECT DISTINCT u FROM UsuarioJPA u "
+                    + "LEFT JOIN FETCH u.DireccionesJPA d "
+                    + "LEFT JOIN FETCH d.ColoniaJPA c "
+                    + "LEFT JOIN FETCH c.MunicipioJPA m "
+                    + "LEFT JOIN FETCH m.EstadoJPA e "
+                    + "LEFT JOIN FETCH e.PaisJPA",
+                    UsuarioJPA.class
+            );
             List<UsuarioJPA> usuariosJPA = query.getResultList();
 // JPA ML , para llenar lista de usuarios
             List<Usuario> usuariosML = usuariosJPA.stream()
                     .map(jpa -> modelMapper.map(jpa, Usuario.class))
                     .collect(Collectors.toList());
 
-            result.objects = (List<Object>)(List<?>) usuariosML;
+            result.objects = (List<Object>) (List<?>) usuariosML;
             result.correct = true;
 
         } catch (Exception ex) {
