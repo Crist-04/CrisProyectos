@@ -218,8 +218,8 @@
                 <div class="row g-3">
                     <div class="col-md-4">
                         <label for="email" class="form-label required-field">Email</label>
-                        <input type="email" class="form-control" id="email" th:field="*{Email}" placeholder="usuario@ejemplo.com">
-                        <span th:if="${#fields.hasErrors('Email')}" th:errors="*{Email}" class="text-danger"></span>
+                        <input type="email" class="form-control" id="email" th:field="*{email}" placeholder="usuario@ejemplo.com">
+                        <span th:if="${#fields.hasErrors('Email')}" th:errors="*{email}" class="text-danger"></span>
                     </div>
                     <div class="col-md-4">
                         <label for="telefono" class="form-label">Teléfono</label>
@@ -228,8 +228,8 @@
                     </div>
                     <div class="col-md-4">
                         <label for="celular" class="form-label">Celular</label>
-                        <input type="tel" class="form-control" id="celular" th:field="*{Celular}" placeholder="5559876543" maxlength="17">
-                        <span th:if="${#fields.hasErrors('Celular')}" th:errors="*{Celular}" class="text-danger"></span>
+                        <input type="tel" class="form-control" id="celular" th:field="*{celular}" placeholder="5559876543" maxlength="17">
+                        <span th:if="${#fields.hasErrors('Celular')}" th:errors="*{celular}" class="text-danger"></span>
                     </div>
                 </div>
 
@@ -241,8 +241,8 @@
                 <div class="row g-3">
                     <div class="col-md-4">
                         <label for="password" class="form-label required-field">Contraseña</label>
-                        <input type="password" class="form-control" id="password" th:field="*{Password}" placeholder="********">
-                        <span th:if="${#fields.hasErrors('Password')}" th:errors='*{Password}' class="text-danger"></span>
+                        <input type="password" class="form-control" id="password" th:field="*{password}" placeholder="********">
+                        <span th:if="${#fields.hasErrors('Password')}" th:errors='*{password}' class="text-danger"></span>
                     </div>
                     <div class="col-md-4">
                         <label for="nombreRol" class="form-label required-field">Rol</label>

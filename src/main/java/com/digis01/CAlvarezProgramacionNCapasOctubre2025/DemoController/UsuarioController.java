@@ -6,6 +6,7 @@ import com.digis01.CAlvarezProgramacionNCapasOctubre2025.DAO.DireccionDAOImpleme
 import com.digis01.CAlvarezProgramacionNCapasOctubre2025.DAO.EstadoDAOImplementation;
 import com.digis01.CAlvarezProgramacionNCapasOctubre2025.DAO.MunicipioDAOImplementation;
 import com.digis01.CAlvarezProgramacionNCapasOctubre2025.DAO.RolDAOImplementation;
+import com.digis01.CAlvarezProgramacionNCapasOctubre2025.DAO.RolJPADAOImplementation;
 import com.digis01.CAlvarezProgramacionNCapasOctubre2025.DAO.UsuarioDAOImplementation;
 import com.digis01.CAlvarezProgramacionNCapasOctubre2025.DAO.UsuarioJPADAOImplementation;
 import com.digis01.CAlvarezProgramacionNCapasOctubre2025.ML.Colonia;
@@ -63,6 +64,8 @@ public class UsuarioController {
     @Autowired
     private RolDAOImplementation rolDAOImplementation;
     @Autowired
+    private RolJPADAOImplementation rolJPADAOImplementation;
+    @Autowired
     private EstadoDAOImplementation estadoDAOImplementation;
     @Autowired
     private MunicipioDAOImplementation municipioDAOImplementation;
@@ -90,7 +93,7 @@ public class UsuarioController {
 
         Result result = usuarioDAOImplementation.GetAll();
         Result rolesResult = rolDAOImplementation.GetAll();
-        
+
         Result resultJPA = usuarioJPADAOImplementation.GetAll();
 
         model.addAttribute("usuarios", result.objects);
@@ -117,10 +120,6 @@ public class UsuarioController {
         session.removeAttribute("archivoCargaMasiva");
 
         // Inserción con carga masiva
-        
-        
-        
-
         return "CargaMasiva";
     }
 //    @GetMapping("/cargaMasiva/procesar")
@@ -504,19 +503,40 @@ public class UsuarioController {
 //    model.addAttribute("roles", resultRoles.objects);
 //        return "UsuarioForm";
 //    }
+//    @GetMapping("/add")
+//    public String Add(Model model) {
+//        Usuario usuario = new Usuario();
+//
+//        usuario.setDirecciones(new ArrayList<>());
+//
+//        Direccion direccion = new Direccion();
+//        direccion.setColonia(new Colonia());
+//        usuario.getDirecciones().add(direccion);
+//
+//        model.addAttribute("Usuario", usuario);
+//
+//        Result resultRoles = rolDAOImplementation.GetAll();
+//        model.addAttribute("roles", resultRoles.objects);
+//
+//        return "UsuarioForm";
+//    }
+    
+    
+    //para el add de jpa
     @GetMapping("/add")
     public String Add(Model model) {
         Usuario usuario = new Usuario();
-
         usuario.setDirecciones(new ArrayList<>());
 
         Direccion direccion = new Direccion();
         direccion.setColonia(new Colonia());
         usuario.getDirecciones().add(direccion);
 
+        usuario.setRol(new Rol());
+
         model.addAttribute("Usuario", usuario);
 
-        Result resultRoles = rolDAOImplementation.GetAll();
+        Result resultRoles = rolJPADAOImplementation.GetAll();
         model.addAttribute("roles", resultRoles.objects);
 
         return "UsuarioForm";
@@ -541,15 +561,78 @@ public class UsuarioController {
         return "UsuarioIndex";
     }
 
-    @PostMapping("add")
+//    @PostMapping("add")
+//    public String Form(@Valid @ModelAttribute("Usuario") Usuario usuario,
+//            BindingResult bindingResult,
+//            Model model,
+//            RedirectAttributes redirectAttributes,
+//            @RequestParam("foto") MultipartFile foto) {
+//
+//        if (bindingResult.hasErrors()) {
+//
+//            if (usuario.getDirecciones() == null) {
+//                usuario.setDirecciones(new ArrayList<>());
+//            }
+//
+//            if (usuario.getDirecciones().isEmpty()) {
+//                Direccion direccion = new Direccion();
+//                direccion.setColonia(new Colonia());
+//                usuario.getDirecciones().add(direccion);
+//            } else {
+//                if (usuario.getDirecciones().get(0) != null) {
+//                    if (usuario.getDirecciones().get(0).getColonia() == null) {
+//                        usuario.getDirecciones().get(0).setColonia(new Colonia());
+//                    }
+//                }
+//            }
+//
+//            //Recargar los roles
+//            Result resultRoles = rolDAOImplementation.GetAll();
+//            model.addAttribute("roles", resultRoles.objects);
+//
+//            model.addAttribute("Usuario", usuario);
+//
+//            return "UsuarioForm";
+//        }
+//
+//        if (foto != null) {
+//            try {
+//
+//                String extension = foto.getOriginalFilename().split("\\.")[1];
+//                if (extension.equals("jpg") || extension.equals("png")) {
+//                    byte[] byteImagen = foto.getBytes();
+//                    String imagenBase64 = Base64.getEncoder().encodeToString(byteImagen);
+//                    usuario.setImagen(imagenBase64);
+//
+//                }
+//
+//            } catch (IOException ex) {
+//                Logger.getLogger(UsuarioController.class.getName()).log(Level.SEVERE, null, ex);
+//
+//            }
+//        }
+//
+//        usuarioDAOImplementation.Add(usuario);
+//
+//        redirectAttributes.addFlashAttribute("successMessage", "El usuario: " + usuario.getUserName() + " se creo con exito");
+//
+//        return "redirect:/usuario";
+//
+//    }
+    
+    
+    //El de aqui es el Add de JPA
+    @PostMapping("/add")
     public String Form(@Valid @ModelAttribute("Usuario") Usuario usuario,
             BindingResult bindingResult,
             Model model,
             RedirectAttributes redirectAttributes,
-            @RequestParam("foto") MultipartFile foto) {
+            @RequestParam(value = "foto", required = false) MultipartFile foto) {
 
+        
         if (bindingResult.hasErrors()) {
 
+            
             if (usuario.getDirecciones() == null) {
                 usuario.setDirecciones(new ArrayList<>());
             }
@@ -566,56 +649,81 @@ public class UsuarioController {
                 }
             }
 
-            //Recargar los roles
-            Result resultRoles = rolDAOImplementation.GetAll();
+            
+            Result resultRoles = rolJPADAOImplementation.GetAll();
             model.addAttribute("roles", resultRoles.objects);
-
             model.addAttribute("Usuario", usuario);
 
             return "UsuarioForm";
         }
 
-        if (foto != null) {
+        
+        if (foto != null && !foto.isEmpty()) {
             try {
+                String nombreArchivo = foto.getOriginalFilename();
+                if (nombreArchivo != null && nombreArchivo.contains(".")) {
+                    String extension = nombreArchivo.substring(nombreArchivo.lastIndexOf(".") + 1).toLowerCase();
 
-                String extension = foto.getOriginalFilename().split("\\.")[1];
-                if (extension.equals("jpg") || extension.equals("png")) {
-                    byte[] byteImagen = foto.getBytes();
-                    String imagenBase64 = Base64.getEncoder().encodeToString(byteImagen);
-                    usuario.setImagen(imagenBase64);
+                    if (extension.equals("jpg") || extension.equals("png") || extension.equals("jpeg")) {
+                        byte[] byteImagen = foto.getBytes();
+                        String imagenBase64 = Base64.getEncoder().encodeToString(byteImagen);
+                        usuario.setImagen(imagenBase64);
+                    } else {
+                        redirectAttributes.addFlashAttribute("errorMessage",
+                                "Formato de imagen no válido. Solo se permiten JPG, JPEG y PNG");
 
+                        
+                        usuario.setDirecciones(usuario.getDirecciones() != null ? usuario.getDirecciones() : new ArrayList<>());
+                        if (usuario.getDirecciones().isEmpty()) {
+                            Direccion direccion = new Direccion();
+                            direccion.setColonia(new Colonia());
+                            usuario.getDirecciones().add(direccion);
+                        }
+
+                        Result resultRoles = rolJPADAOImplementation.GetAll();
+                        model.addAttribute("roles", resultRoles.objects);
+                        model.addAttribute("Usuario", usuario);
+                        return "UsuarioForm";
+                    }
                 }
-
             } catch (IOException ex) {
                 Logger.getLogger(UsuarioController.class.getName()).log(Level.SEVERE, null, ex);
-
+                redirectAttributes.addFlashAttribute("errorMessage",
+                        "Error al procesar la imagen: " + ex.getMessage());
+                return "redirect:/usuario/add";
             }
         }
 
-        usuarioDAOImplementation.Add(usuario);
+        
+        try {
+            Result result = usuarioJPADAOImplementation.Add(usuario);
 
-        redirectAttributes.addFlashAttribute("successMessage", "El usuario: " + usuario.getUserName() + " se creo con exito");
+            if (result.correct) {
+                redirectAttributes.addFlashAttribute("successMessage",
+                        "El usuario: " + usuario.getUserName() + " se creó con éxito");
+                return "redirect:/usuario";
+            } else {
+                redirectAttributes.addFlashAttribute("errorMessage",
+                        "Error al crear el usuario: " + result.errorMessage);
 
-        return "redirect:/usuario";
+                
+                usuario.setDirecciones(usuario.getDirecciones() != null ? usuario.getDirecciones() : new ArrayList<>());
+                if (usuario.getDirecciones().isEmpty()) {
+                    Direccion direccion = new Direccion();
+                    direccion.setColonia(new Colonia());
+                    usuario.getDirecciones().add(direccion);
+                }
 
-    }
-
-//     if (result.correct) {
-//            redirectAttributes.addFlashAttribute("successMessage", "El usuario " + usuario.getUserName() + " se creó con éxito");
-//        } else {
-//            redirectAttributes.addFlashAttribute("errorMessage", "Error al crear el usuario: " + result.errorMessage);
-//        }
-    @GetMapping("detalle/{idUsuario}")
-    public String UsuarioDetalle(@PathVariable("idUsuario") int idUsuario, Model model,
-            RedirectAttributes redirectAtrributes) {
-        Result result = usuarioDAOImplementation.GetById(idUsuario);
-
-        if (result.correct && result.object != null) {
-            model.addAttribute("usuario", result.object);
-            return "UsuarioDetail";
-        } else {
-
-            return "redirect:/usuario";
+                Result resultRoles = rolJPADAOImplementation.GetAll();
+                model.addAttribute("roles", resultRoles.objects);
+                model.addAttribute("Usuario", usuario);
+                return "UsuarioForm";
+            }
+        } catch (Exception ex) {
+            redirectAttributes.addFlashAttribute("errorMessage",
+                    "Error inesperado: " + ex.getMessage());
+            ex.printStackTrace();
+            return "redirect:/usuario/add";
         }
     }
 
