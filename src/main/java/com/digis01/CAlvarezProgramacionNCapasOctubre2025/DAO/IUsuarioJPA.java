@@ -12,4 +12,6 @@ public interface IUsuarioJPA {
     
     Result GetById(int IdUsuario);
     
+    Result Update (Usuario usuario);
+    
 }

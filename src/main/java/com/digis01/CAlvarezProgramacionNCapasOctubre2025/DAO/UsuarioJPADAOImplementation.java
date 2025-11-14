@@ -7,6 +7,7 @@ import com.digis01.CAlvarezProgramacionNCapasOctubre2025.JPA.UsuarioJPA;
 import com.digis01.CAlvarezProgramacionNCapasOctubre2025.ML.Result;
 import com.digis01.CAlvarezProgramacionNCapasOctubre2025.ML.Usuario;
 import jakarta.persistence.EntityManager;
+import jakarta.persistence.LockModeType;
 import jakarta.persistence.TypedQuery;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -84,10 +85,8 @@ public class UsuarioJPADAOImplementation implements IUsuarioJPA {
 
             entityManager.persist(usuarioJPA);
 
-            
             entityManager.flush();
 
-            
             result.object = modelMapper.map(usuarioJPA, Usuario.class);
             result.correct = true;
             result.errorMessage = "Usuario agregado correctamente con ID: " + usuarioJPA.getIdUsuario();
@@ -96,50 +95,96 @@ public class UsuarioJPADAOImplementation implements IUsuarioJPA {
             result.correct = false;
             result.errorMessage = "Error al agregar usuario: " + ex.getMessage();
             result.ex = ex;
-           
+
         }
 
         return result;
     }
-    
-    
+
     @Override
     @Transactional(readOnly = true)
-    public Result GetById(int idUsuario){
+    public Result GetById(int idUsuario) {
         Result result = new Result();
-        try{
-            
+        try {
+
             TypedQuery<UsuarioJPA> query = entityManager.createQuery(
-            "SELECT DISTINCT u FROM UsuarioJPA u " +
-                    "LEFT JOIN FETCH u.rol " +
-                    "LEFT JOIN FETCH u.DireccionesJPA d " +
-                    "LEFT JOIN FETCH d.ColoniaJPA c " +
-                    "LEFT JOIN FETCH c.MunicipioJPA m " +
-                    "LEFT JOIN FETCH m.EstadoJPA e " +
-                    "LEFT JOIN FETCH e.PaisJPA " +
-                    "WHERE u.IdUsuario = :IdUsuario",
+                    "SELECT DISTINCT u FROM UsuarioJPA u "
+                    + "LEFT JOIN FETCH u.rol "
+                    + "LEFT JOIN FETCH u.DireccionesJPA d "
+                    + "LEFT JOIN FETCH d.ColoniaJPA c "
+                    + "LEFT JOIN FETCH c.MunicipioJPA m "
+                    + "LEFT JOIN FETCH m.EstadoJPA e "
+                    + "LEFT JOIN FETCH e.PaisJPA "
+                    + "WHERE u.IdUsuario = :IdUsuario",
                     UsuarioJPA.class
             );
-            
+
             query.setParameter("IdUsuario", idUsuario);
-            
+
             UsuarioJPA usuarioJPA = query.getSingleResult();
-            
+
             Usuario usuario = modelMapper.map(usuarioJPA, Usuario.class);
-            
+
             result.object = usuario;
             result.correct = true;
             result.errorMessage = "Id encontrado";
-            
-        }catch(Exception ex){
+
+        } catch (Exception ex) {
             result.correct = false;
             result.errorMessage = ex.getLocalizedMessage();
             result.ex = ex;
         }
-        
-        
-        
+
         return result;
     }
-    
+
+    @Override
+    @Transactional
+    public Result Update(Usuario usuario) {
+        Result result = new Result();
+
+        try {
+
+            UsuarioJPA usuarioExistente = entityManager.find(UsuarioJPA.class, usuario.getIdUsuario());
+            if (usuarioExistente == null) {
+                result.correct = false;
+                result.errorMessage = "Usuario no encontrado con ID: " + usuario.getIdUsuario();
+            }
+            
+            usuarioExistente.setNombre(usuario.getNombre());
+            usuarioExistente.setUsername(usuario.getUserName());
+            usuarioExistente.setApellidoPaterno(usuario.getApellidoPaterno());
+            usuarioExistente.setApellidoMaterno(usuario.getApellidoMaterno());
+            usuarioExistente.setEmail(usuario.getEmail());
+            usuarioExistente.setFechaNacimiento(usuario.getFechaNacimiento());
+            usuarioExistente.setSexo(usuario.getSexo());
+            usuarioExistente.setTelefono(usuario.getTelefono());
+            usuarioExistente.setCelular(usuario.getCelular());
+            usuarioExistente.setCURP(usuario.getCURP());
+            
+            if (usuario.getImagen()!= null && !usuario.getImagen().isEmpty()) {
+                usuarioExistente.setImagen(usuario.getImagen());     
+            }
+            
+            if (usuario.getRol()!= null && usuario.getRol().getIdRol()> 0) {
+                RolJPA rolReference = entityManager.getReference(RolJPA.class, usuario.getRol().getIdRol());
+                usuarioExistente.setRol(rolReference);        
+            }
+            
+            entityManager.merge(usuarioExistente);
+            entityManager.flush();
+            
+            result.object = modelMapper.map(usuarioExistente, Usuario.class);
+            result.correct = true;
+            result.errorMessage = "Usuario actualizado";
+
+        } catch (Exception ex) {
+            result.correct = false;
+            result.errorMessage = ex.getLocalizedMessage();
+            result.ex = ex;
+        }
+
+        return result;
+    }
+
 }

@@ -794,9 +794,23 @@ public String DetalleUsuario(@PathVariable("idUsuario") int idUsuario, Model mod
 }
     
 
-    @PostMapping("/detalle")
+//    @PostMapping("/detalle")
+//    public String UpdateUsuario(@ModelAttribute("usuario") Usuario usuario, RedirectAttributes redirectAttributes) {
+//        Result result = usuarioDAOImplementation.Update(usuario);
+//
+//        if (result.correct) {
+//            redirectAttributes.addFlashAttribute("successMessage", "El usuario " + usuario.getUserName() + " se actualizó con éxito");
+//        } else {
+//            redirectAttributes.addFlashAttribute("errorMessage", "Error al actualizar el usuario: " + result.errorMessage);
+//        }
+//
+//        return "redirect:/usuario/detalle/" + usuario.getIdUsuario();
+//    }
+
+
+@PostMapping("/detalle")
     public String UpdateUsuario(@ModelAttribute("usuario") Usuario usuario, RedirectAttributes redirectAttributes) {
-        Result result = usuarioDAOImplementation.Update(usuario);
+        Result result = usuarioJPADAOImplementation.Update(usuario);
 
         if (result.correct) {
             redirectAttributes.addFlashAttribute("successMessage", "El usuario " + usuario.getUserName() + " se actualizó con éxito");
