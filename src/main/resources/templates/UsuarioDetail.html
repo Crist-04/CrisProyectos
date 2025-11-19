@@ -815,413 +815,482 @@
     </div>  
 
 
-    <!-- funciones para desbloquear los inputs y botones de direcciones -->
+   <!-- funciones para desbloquear los inputs y botones de direcciones -->
 <th:block layout:fragment="extra-scripts">
     <script>
         let isEditMode = false;
         let direccionEditStates = {};
+        
         function toggleInfo() {
-        const infoSection = document.getElementById('infoSection');
-        const toggleText = document.getElementById('toggleText');
-        const toggleIcon = document.getElementById('toggleIcon');
-        if (infoSection.classList.contains('show')) {
-        infoSection.classList.remove('show');
-        toggleText.textContent = 'Mostrar Información Completa';
-        toggleIcon.className = 'bi bi-eye';
-        } else {
-        infoSection.classList.add('show');
-        toggleText.textContent = 'Ocultar Información';
-        toggleIcon.className = 'bi bi-eye-slash';
-        }
+            const infoSection = document.getElementById('infoSection');
+            const toggleText = document.getElementById('toggleText');
+            const toggleIcon = document.getElementById('toggleIcon');
+            if (infoSection.classList.contains('show')) {
+                infoSection.classList.remove('show');
+                toggleText.textContent = 'Mostrar Información Completa';
+                toggleIcon.className = 'bi bi-eye';
+            } else {
+                infoSection.classList.add('show');
+                toggleText.textContent = 'Ocultar Información';
+                toggleIcon.className = 'bi bi-eye-slash';
+            }
         }
 
         function toggleEdit() {
-        isEditMode = !isEditMode;
-        const editBtn = document.getElementById('editBtn');
-        const editBtnText = document.getElementById('editBtnText');
-        const saveBtn = document.getElementById('saveBtn');
-        const editModeIndicator = document.getElementById('editModeIndicator');
-        const inputs = document.querySelectorAll('#infoSection input, #infoSection select');
-        if (isEditMode) {
-        inputs.forEach(input => input.disabled = false);
-        editBtn.className = 'btn btn-secondary-custom btn-custom';
-        editBtnText.innerHTML = 'Cancelar';
-        saveBtn.style.display = 'inline-block';
-        editModeIndicator.classList.add('active');
-        if (!document.getElementById('infoSection').classList.contains('show')) {
-        toggleInfo();
-        }
-        } else {
-        inputs.forEach(input => input.disabled = true);
-        editBtn.className = 'btn btn-warning-custom btn-custom';
-        editBtnText.innerHTML = '<i class="bi bi-pencil-square"></i> Editar Usuario';
-        saveBtn.style.display = 'none';
-        editModeIndicator.classList.remove('active');
-        location.reload();
-        }
+            isEditMode = !isEditMode;
+            const editBtn = document.getElementById('editBtn');
+            const editBtnText = document.getElementById('editBtnText');
+            const saveBtn = document.getElementById('saveBtn');
+            const editModeIndicator = document.getElementById('editModeIndicator');
+            const inputs = document.querySelectorAll('#infoSection input, #infoSection select');
+            
+            if (isEditMode) {
+                inputs.forEach(input => input.disabled = false);
+                editBtn.className = 'btn btn-secondary-custom btn-custom';
+                editBtnText.innerHTML = 'Cancelar';
+                saveBtn.style.display = 'inline-block';
+                editModeIndicator.classList.add('active');
+                if (!document.getElementById('infoSection').classList.contains('show')) {
+                    toggleInfo();
+                }
+            } else {
+                inputs.forEach(input => input.disabled = true);
+                editBtn.className = 'btn btn-warning-custom btn-custom';
+                editBtnText.innerHTML = '<i class="bi bi-pencil-square"></i> Editar Usuario';
+                saveBtn.style.display = 'none';
+                editModeIndicator.classList.remove('active');
+                location.reload();
+            }
         }
 
         function toggleEditDireccion(index) {
-        const form = document.getElementById('formDireccion' + index);
-        const inputs = form.querySelectorAll('.direccion-input');
-        const btnGuardar = document.getElementById('btnGuardar' + index);
-        const btnCancelar = document.getElementById('btnCancelar' + index);
-        const btnEditar = document.getElementById('btnEditar' + index);
-        if (!direccionEditStates[index]) {
-        direccionEditStates[index] = {};
-        inputs.forEach(input => {
-        direccionEditStates[index][input.id] = input.value;
-        });
+            const form = document.getElementById('formDireccion' + index);
+            const inputs = form.querySelectorAll('.direccion-input');
+            const btnGuardar = document.getElementById('btnGuardar' + index);
+            const btnCancelar = document.getElementById('btnCancelar' + index);
+            const btnEditar = document.getElementById('btnEditar' + index);
+            
+            if (!direccionEditStates[index]) {
+                direccionEditStates[index] = {};
+                inputs.forEach(input => {
+                    direccionEditStates[index][input.id] = input.value;
+                });
+            }
+
+            inputs.forEach(input => input.disabled = false);
+            cargarDropdownsParaEdicion(index);
+            btnEditar.style.display = 'none';
+            btnGuardar.style.display = 'inline-block';
+            btnCancelar.style.display = 'inline-block';
         }
 
-
-        inputs.forEach(input => input.disabled = false);
-        cargarDropdownsParaEdicion(index);
-        btnEditar.style.display = 'none';
-        btnGuardar.style.display = 'inline-block';
-        btnCancelar.style.display = 'inline-block';
-        }
-
-//funcion para traer las listas y editarlas
-
+        // ✅ FUNCIÓN CORREGIDA - Sin duplicados
         function cargarDropdownsParaEdicion(index) {
-        const ddlPais = $('#ddlpais' + index);
-        const ddlEstado = $('#ddlestado' + index);
-        const ddlMunicipio = $('#ddlmunicipio' + index);
-        const ddlColonia = $('#ddlcolonia' + index);
-        const codigoPostal = $('#codigoPostal' + index);
-        const idEstadoActual = ddlEstado.data('idestado');
-        const idMunicipioActual = ddlMunicipio.data('idmunicipio');
-        const idColoniaActual = ddlColonia.val();
-        console.log('IDs actuales:', {
-        estado: idEstadoActual,
+            const ddlPais = $('#ddlpais' + index);
+            const ddlEstado = $('#ddlestado' + index);
+            const ddlMunicipio = $('#ddlmunicipio' + index);
+            const ddlColonia = $('#ddlcolonia' + index);
+            const codigoPostal = $('#codigoPostal' + index);
+            
+            const idEstadoActual = ddlEstado.data('idestado');
+            const idMunicipioActual = ddlMunicipio.data('idmunicipio');
+            const idColoniaActual = ddlColonia.val();
+            
+            console.log('=== Cargando dropdowns para dirección', index);
+            console.log('IDs actuales:', {
+                estado: idEstadoActual,
                 municipio: idMunicipioActual,
                 colonia: idColoniaActual
-        });
-        ddlPais.val('1');
-        $.ajax({
-        type: 'GET',
+            });
+            
+            ddlPais.val('1');
+            
+            // Cargar Estados
+            $.ajax({
+                type: 'GET',
                 url: "/usuario/estado/1",
                 datatype: "json",
                 success: function(data) {
-                ddlEstado.empty();
-                ddlEstado.append("<option value='0'>Selecciona un estado</option>");
-                $.each(data.objects, function(i, estado) {
-                ddlEstado.append("<option value=" + estado.idEstado + ">" + estado.nombre + "</option>");
-                });
-                if (idEstadoActual && idEstadoActual != 0) {
-                ddlEstado.val(idEstadoActual);
-                $.ajax({
-                type: 'GET',
-                        url: "/usuario/municipio/" + idEstadoActual,
-                        datatype: "json",
-                        success: function(data) {
-                        ddlMunicipio.empty();
-                        ddlMunicipio.append("<option value='0'>Selecciona un municipio</option>");
-                        $.each(data.objects, function(i, municipio) {
-                        ddlMunicipio.append("<option value=" + municipio.idMunicipio + ">" + municipio.nombre + "</option>");
+                    console.log('Estados recibidos:', data);
+                    ddlEstado.empty();
+                    ddlEstado.append("<option value='0'>Selecciona un estado</option>");
+                    
+                    if (data.objects && data.objects.length > 0) {
+                        $.each(data.objects, function(i, estado) {
+                            ddlEstado.append("<option value='" + estado.idEstado + "'>" + estado.nombre + "</option>");
                         });
-                        if (idMunicipioActual && idMunicipioActual != 0) {
-                        ddlMunicipio.val(idMunicipioActual);
-                        }
-
-
-                        configurarEventosCascada(index);
-                        },
-                        error: function() {
-                        Swal.fire('Error', 'No se pudieron cargar los municipios', 'error');
-                        }
-                });
-                } else {
-                configurarEventosCascada(index);
-                }
-                },
-                error: function() {
-                Swal.fire('Error', 'No se pudieron cargar los estados', 'error');
-                }
-        });
-        }
-
-
-        function cargarDropdownsParaEdicion(index) {
-        const ddlPais = $('#ddlpais' + index);
-        const ddlEstado = $('#ddlestado' + index);
-        const ddlMunicipio = $('#ddlmunicipio' + index);
-        const ddlColonia = $('#ddlcolonia' + index);
-        const codigoPostal = $('#codigoPostal' + index);
-        const idEstadoActual = ddlEstado.data('idestado');
-        const idMunicipioActual = ddlMunicipio.data('idmunicipio');
-        const idColoniaActual = ddlColonia.val();
-        ddlPais.val('1');
-        $.ajax({
-        type: 'GET',
-                url: "/usuario/estado/1",
-                datatype: "json",
-                success: function(data) {
-                ddlEstado.empty();
-                ddlEstado.append("<option value='0'>Selecciona un estado</option>");
-                $.each(data.objects, function(i, estado) {
-                ddlEstado.append("<option value=" + estado.idEstado + ">" + estado.nombre + "</option>");
-                });
-                if (idEstadoActual && idEstadoActual != 0) {
-                ddlEstado.val(idEstadoActual);
-                $.ajax({
-                type: 'GET',
-                        url: "/usuario/municipio/" + idEstadoActual,
-                        datatype: "json",
-                        success: function(data) {
-                        ddlMunicipio.empty();
-                        ddlMunicipio.append("<option value='0'>Selecciona un municipio</option>");
-                        $.each(data.objects, function(i, municipio) {
-                        ddlMunicipio.append("<option value=" + municipio.idMunicipio + ">" + municipio.nombre + "</option>");
-                        });
-                        if (idMunicipioActual && idMunicipioActual != 0) {
-                        ddlMunicipio.val(idMunicipioActual);
-                        $.ajax({
-                        type: 'GET',
-                                url: "/usuario/colonia/" + idMunicipioActual,
+                        
+                        // Seleccionar estado actual
+                        if (idEstadoActual && idEstadoActual != 0) {
+                            ddlEstado.val(idEstadoActual);
+                            
+                            // Cargar Municipios
+                            $.ajax({
+                                type: 'GET',
+                                url: "/usuario/municipio/" + idEstadoActual,
                                 datatype: "json",
                                 success: function(data) {
-                                ddlColonia.empty();
-                                ddlColonia.append("<option value='0'>Selecciona una colonia</option>");
-                                $.each(data.objects, function(i, colonia) {
-                                ddlColonia.append("<option value=" + colonia.idColonia + ">" + colonia.nombre + "</option>");
-                                });
-                                if (idColoniaActual && idColoniaActual != 0) {
-                                ddlColonia.val(idColoniaActual);
-                                }
-
-
-                                configurarEventosCascada(index);
+                                    console.log('Municipios recibidos:', data);
+                                    ddlMunicipio.empty();
+                                    ddlMunicipio.append("<option value='0'>Selecciona un municipio</option>");
+                                    
+                                    if (data.objects && data.objects.length > 0) {
+                                        $.each(data.objects, function(i, municipio) {
+                                            ddlMunicipio.append("<option value='" + municipio.idMunicipio + "'>" + municipio.nombre + "</option>");
+                                        });
+                                        
+                                        // Seleccionar municipio actual
+                                        if (idMunicipioActual && idMunicipioActual != 0) {
+                                            ddlMunicipio.val(idMunicipioActual);
+                                            
+                                            // Cargar Colonias
+                                            $.ajax({
+                                                type: 'GET',
+                                                url: "/usuario/colonia/" + idMunicipioActual,
+                                                datatype: "json",
+                                                success: function(data) {
+                                                    console.log('Colonias recibidas:', data);
+                                                    ddlColonia.empty();
+                                                    ddlColonia.append("<option value='0'>Selecciona una colonia</option>");
+                                                    
+                                                    if (data.objects && data.objects.length > 0) {
+                                                        $.each(data.objects, function(i, colonia) {
+                                                            ddlColonia.append("<option value='" + colonia.idColonia + "'>" + colonia.nombre + "</option>");
+                                                        });
+                                                        
+                                                        // Seleccionar colonia actual
+                                                        if (idColoniaActual && idColoniaActual != 0) {
+                                                            ddlColonia.val(idColoniaActual);
+                                                        }
+                                                    }
+                                                    
+                                                    configurarEventosCascada(index);
+                                                },
+                                                error: function(xhr, status, error) {
+                                                    console.error('Error cargando colonias:', error);
+                                                    Swal.fire('Error', 'No se pudieron cargar las colonias', 'error');
+                                                }
+                                            });
+                                        }
+                                    }
+                                    
+                                    configurarEventosCascada(index);
                                 },
-                                error: function() {
-                                Swal.fire('Error', 'No se pudieron cargar las colonias', 'error');
+                                error: function(xhr, status, error) {
+                                    console.error('Error cargando municipios:', error);
+                                    Swal.fire('Error', 'No se pudieron cargar los municipios', 'error');
                                 }
-                        });
+                            });
                         }
+                    } else {
+                        console.warn('No se recibieron estados');
+                    }
+                    
+                    configurarEventosCascada(index);
+                },
+                error: function(xhr, status, error) {
+                    console.error('Error cargando estados:', error, xhr.responseText);
+                    Swal.fire('Error', 'No se pudieron cargar los estados', 'error');
+                }
+            });
+        }
+
+        // ✅ FUNCIÓN QUE FALTABA - Configurar eventos en cascada
+        function configurarEventosCascada(index) {
+            const ddlEstado = $('#ddlestado' + index);
+            const ddlMunicipio = $('#ddlmunicipio' + index);
+            const ddlColonia = $('#ddlcolonia' + index);
+            const codigoPostal = $('#codigoPostal' + index);
+            
+            // Evento cambio de Estado
+            ddlEstado.off('change').on('change', function() {
+                const idEstado = $(this).val();
+                console.log('Estado cambiado a:', idEstado);
+                
+                if (idEstado != "0") {
+                    $.ajax({
+                        type: 'GET',
+                        url: "/usuario/municipio/" + idEstado,
+                        datatype: "json",
+                        success: function(data) {
+                            ddlMunicipio.empty();
+                            ddlMunicipio.append("<option value='0'>Selecciona un municipio</option>");
+                            $.each(data.objects, function(i, municipio) {
+                                ddlMunicipio.append("<option value='" + municipio.idMunicipio + "'>" + municipio.nombre + "</option>");
+                            });
+                            ddlColonia.empty().append("<option value='0'>Selecciona una colonia</option>");
+                            codigoPostal.val("");
                         },
                         error: function() {
-                        Swal.fire('Error', 'No se pudieron cargar los municipios', 'error');
+                            Swal.fire('Error', 'No se pudieron cargar los municipios', 'error');
                         }
-                });
+                    });
                 }
-                },
-                error: function() {
-                Swal.fire('Error', 'No se pudieron cargar los estados', 'error');
+            });
+            
+            // Evento cambio de Municipio
+            ddlMunicipio.off('change').on('change', function() {
+                const idMunicipio = $(this).val();
+                console.log('Municipio cambiado a:', idMunicipio);
+                
+                if (idMunicipio != "0") {
+                    $.ajax({
+                        type: 'GET',
+                        url: "/usuario/colonia/" + idMunicipio,
+                        datatype: "json",
+                        success: function(data) {
+                            ddlColonia.empty();
+                            ddlColonia.append("<option value='0'>Selecciona una colonia</option>");
+                            $.each(data.objects, function(i, colonia) {
+                                ddlColonia.append("<option value='" + colonia.idColonia + "'>" + colonia.nombre + "</option>");
+                            });
+                            codigoPostal.val("");
+                        },
+                        error: function() {
+                            Swal.fire('Error', 'No se pudieron cargar las colonias', 'error');
+                        }
+                    });
                 }
-        });
+            });
+            
+            // Evento cambio de Colonia
+            ddlColonia.off('change').on('change', function() {
+                const idColonia = $(this).val();
+                console.log('Colonia cambiada a:', idColonia);
+                
+                if (idColonia != "0") {
+                    $.ajax({
+                        type: 'GET',
+                        url: "/usuario/codigopostal/" + idColonia,
+                        datatype: "json",
+                        success: function(data) {
+                            if (data.correct && data.object && data.object.codigoPostal) {
+                                codigoPostal.val(data.object.codigoPostal);
+                            }
+                        },
+                        error: function() {
+                            console.error('Error cargando código postal');
+                        }
+                    });
+                }
+            });
         }
 
         function cancelarEditDireccion(index) {
-        const form = document.getElementById('formDireccion' + index);
-        const inputs = form.querySelectorAll('.direccion-input');
-        const btnGuardar = document.getElementById('btnGuardar' + index);
-        const btnCancelar = document.getElementById('btnCancelar' + index);
-        const btnEditar = document.getElementById('btnEditar' + index);
-        if (direccionEditStates[index]) {
-        inputs.forEach(input => {
-        const savedValue = direccionEditStates[index][input.id];
-        if (savedValue !== undefined) {
-        input.value = savedValue;
-        }
-        });
-        }
+            const form = document.getElementById('formDireccion' + index);
+            const inputs = form.querySelectorAll('.direccion-input');
+            const btnGuardar = document.getElementById('btnGuardar' + index);
+            const btnCancelar = document.getElementById('btnCancelar' + index);
+            const btnEditar = document.getElementById('btnEditar' + index);
+            
+            if (direccionEditStates[index]) {
+                inputs.forEach(input => {
+                    const savedValue = direccionEditStates[index][input.id];
+                    if (savedValue !== undefined) {
+                        input.value = savedValue;
+                    }
+                });
+            }
 
-        inputs.forEach(input => input.disabled = true);
-        btnEditar.style.display = 'inline-block';
-        btnGuardar.style.display = 'none';
-        btnCancelar.style.display = 'none';
+            inputs.forEach(input => input.disabled = true);
+            btnEditar.style.display = 'inline-block';
+            btnGuardar.style.display = 'none';
+            btnCancelar.style.display = 'none';
         }
 
         document.addEventListener('DOMContentLoaded', function() {
-        const nombreInput = document.getElementById('nombre');
-        const apellidoPaternoInput = document.getElementById('apellidoPaterno');
-        const apellidoMaternoInput = document.getElementById('apellidoMaterno');
-        const displayName = document.getElementById('displayName');
-        function updateDisplayName() {
-        if (isEditMode) {
-        const nombre = nombreInput.value || '';
-        const paterno = apellidoPaternoInput.value || '';
-        const materno = apellidoMaternoInput.value || '';
-        displayName.textContent = `${nombre} ${paterno} ${materno}`.trim();
-        }
-        }
+            const nombreInput = document.getElementById('nombre');
+            const apellidoPaternoInput = document.getElementById('apellidoPaterno');
+            const apellidoMaternoInput = document.getElementById('apellidoMaterno');
+            const displayName = document.getElementById('displayName');
+            
+            function updateDisplayName() {
+                if (isEditMode) {
+                    const nombre = nombreInput.value || '';
+                    const paterno = apellidoPaternoInput.value || '';
+                    const materno = apellidoMaternoInput.value || '';
+                    displayName.textContent = `${nombre} ${paterno} ${materno}`.trim();
+                }
+            }
 
-        if (nombreInput && apellidoPaternoInput && apellidoMaternoInput) {
-        nombreInput.addEventListener('input', updateDisplayName);
-        apellidoPaternoInput.addEventListener('input', updateDisplayName);
-        apellidoMaternoInput.addEventListener('input', updateDisplayName);
-        }
+            if (nombreInput && apellidoPaternoInput && apellidoMaternoInput) {
+                nombreInput.addEventListener('input', updateDisplayName);
+                apellidoPaternoInput.addEventListener('input', updateDisplayName);
+                apellidoMaternoInput.addEventListener('input', updateDisplayName);
+            }
 
-        const formsDir = document.querySelectorAll('.direccion-form');
-        formsDir.forEach(function(form) {
-        form.addEventListener('submit', function(e) {
-        const calle = form.querySelector('[name="calle"]').value.trim();
-        const numeroExterior = form.querySelector('[name="numeroExterior"]').value.trim();
-        const colonia = form.querySelector('[name="colonia.idColonia"]').value;
-        if (!calle || !numeroExterior || !colonia || colonia == "0") {
-        e.preventDefault();
-        Swal.fire({
-        title: 'Campos incompletos',
-                text: 'Por favor completa todos los campos obligatorios: Calle, Número Exterior y Colonia',
-                icon: 'warning'
+            const formsDir = document.querySelectorAll('.direccion-form');
+            formsDir.forEach(function(form) {
+                form.addEventListener('submit', function(e) {
+                    const calle = form.querySelector('[name="calle"]').value.trim();
+                    const numeroExterior = form.querySelector('[name="numeroExterior"]').value.trim();
+                    const colonia = form.querySelector('[name="colonia.idColonia"]').value;
+                    
+                    if (!calle || !numeroExterior || !colonia || colonia == "0") {
+                        e.preventDefault();
+                        Swal.fire({
+                            title: 'Campos incompletos',
+                            text: 'Por favor completa todos los campos obligatorios: Calle, Número Exterior y Colonia',
+                            icon: 'warning'
+                        });
+                        return false;
+                    }
+                });
+            });
         });
-        return false;
-        }
-        });
-        });
-        });</script>
+    </script>
 
-
-    <!-- script para el modal -->
+    <!-- Script para el modal -->
     <script>
-
         function prepararModalAgregar(idUsuario) {
-        document.getElementById('idUsuarioModal').value = idUsuario;
-        document.getElementById('formAgregarDireccion').reset();
-        document.getElementById('modalEstado').innerHTML = '<option value="0">Selecciona un estado</option>';
-        document.getElementById('modalMunicipio').innerHTML = '<option value="0">Selecciona un municipio</option>';
-        document.getElementById('modalColonia').innerHTML = '<option value="0">Selecciona una colonia</option>';
-        document.getElementById('modalCodigoPostal').value = '';
-        cargarEstadosModal();
+            document.getElementById('idUsuarioModal').value = idUsuario;
+            document.getElementById('formAgregarDireccion').reset();
+            document.getElementById('modalEstado').innerHTML = '<option value="0">Selecciona un estado</option>';
+            document.getElementById('modalMunicipio').innerHTML = '<option value="0">Selecciona un municipio</option>';
+            document.getElementById('modalColonia').innerHTML = '<option value="0">Selecciona una colonia</option>';
+            document.getElementById('modalCodigoPostal').value = '';
+            cargarEstadosModal();
         }
 
         function cargarEstadosModal() {
-        $.ajax({
-        type: 'GET',
+            $.ajax({
+                type: 'GET',
                 url: "/usuario/estado/1",
                 success: function(data) {
-                const ddlEstado = $('#modalEstado');
-                ddlEstado.empty().append("<option value='0'>Selecciona un estado</option>");
-                $.each(data.objects, function(i, estado) {
-                ddlEstado.append(`<option value="${estado.idEstado}">${estado.nombre}</option>`);
-                });
-                configurarCascadaModal();
+                    console.log('Modal - Estados recibidos:', data);
+                    const ddlEstado = $('#modalEstado');
+                    ddlEstado.empty().append("<option value='0'>Selecciona un estado</option>");
+                    $.each(data.objects, function(i, estado) {
+                        ddlEstado.append(`<option value="${estado.idEstado}">${estado.nombre}</option>`);
+                    });
+                    configurarCascadaModal();
                 },
-                error: function() {
-                Swal.fire('Error', 'No se pudieron cargar los estados', 'error');
+                error: function(xhr, status, error) {
+                    console.error('Error cargando estados en modal:', error);
+                    Swal.fire('Error', 'No se pudieron cargar los estados', 'error');
                 }
-        });
+            });
         }
 
         function configurarCascadaModal() {
-        $('#modalEstado').off('change').on('change', function() {
-        const idEstado = $(this).val();
-        if (idEstado != "0") {
-        $.ajax({
-        type: 'GET',
-                url: "/usuario/municipio/" + idEstado,
-                success: function(data) {
-                const ddlMunicipio = $('#modalMunicipio');
-                ddlMunicipio.empty().append("<option value='0'>Selecciona un municipio</option>");
-                $.each(data.objects, function(i, municipio) {
-                ddlMunicipio.append(`<option value="${municipio.idMunicipio}">${municipio.nombre}</option>`);
-                });
-                $('#modalColonia').empty().append("<option value='0'>Selecciona una colonia</option>");
-                $('#modalCodigoPostal').val("");
+            $('#modalEstado').off('change').on('change', function() {
+                const idEstado = $(this).val();
+                if (idEstado != "0") {
+                    $.ajax({
+                        type: 'GET',
+                        url: "/usuario/municipio/" + idEstado,
+                        success: function(data) {
+                            const ddlMunicipio = $('#modalMunicipio');
+                            ddlMunicipio.empty().append("<option value='0'>Selecciona un municipio</option>");
+                            $.each(data.objects, function(i, municipio) {
+                                ddlMunicipio.append(`<option value="${municipio.idMunicipio}">${municipio.nombre}</option>`);
+                            });
+                            $('#modalColonia').empty().append("<option value='0'>Selecciona una colonia</option>");
+                            $('#modalCodigoPostal').val("");
+                        }
+                    });
                 }
-        });
-        }
-        });
-        $('#modalMunicipio').off('change').on('change', function() {
-        const idMunicipio = $(this).val();
-        if (idMunicipio != "0") {
-        $.ajax({
-        type: 'GET',
-                url: "/usuario/colonia/" + idMunicipio,
-                success: function(data) {
-                const ddlColonia = $('#modalColonia');
-                ddlColonia.empty().append("<option value='0'>Selecciona una colonia</option>");
-                $.each(data.objects, function(i, colonia) {
-                ddlColonia.append(`<option value="${colonia.idColonia}">${colonia.nombre}</option>`);
-                });
-                $('#modalCodigoPostal').val("");
+            });
+            
+            $('#modalMunicipio').off('change').on('change', function() {
+                const idMunicipio = $(this).val();
+                if (idMunicipio != "0") {
+                    $.ajax({
+                        type: 'GET',
+                        url: "/usuario/colonia/" + idMunicipio,
+                        success: function(data) {
+                            const ddlColonia = $('#modalColonia');
+                            ddlColonia.empty().append("<option value='0'>Selecciona una colonia</option>");
+                            $.each(data.objects, function(i, colonia) {
+                                ddlColonia.append(`<option value="${colonia.idColonia}">${colonia.nombre}</option>`);
+                            });
+                            $('#modalCodigoPostal').val("");
+                        }
+                    });
                 }
-        });
-        }
-        });
-        $('#modalColonia').off('change').on('change', function() {
-        const idColonia = $(this).val();
-        if (idColonia != "0") {
-        $.ajax({
-        type: 'GET',
-                url: "/usuario/codigopostal/" + idColonia,
-                success: function(data) {
-                if (data.correct && data.object && data.object.codigoPostal) {
-                $('#modalCodigoPostal').val(data.object.codigoPostal);
+            });
+            
+            $('#modalColonia').off('change').on('change', function() {
+                const idColonia = $(this).val();
+                if (idColonia != "0") {
+                    $.ajax({
+                        type: 'GET',
+                        url: "/usuario/codigopostal/" + idColonia,
+                        success: function(data) {
+                            if (data.correct && data.object && data.object.codigoPostal) {
+                                $('#modalCodigoPostal').val(data.object.codigoPostal);
+                            }
+                        }
+                    });
                 }
-                }
-        });
-        }
-        });
+            });
         }
 
         function guardarNuevaDireccionModal() {
-        const calle = document.getElementById('modalCalle').value.trim();
-        const numeroExterior = document.getElementById('modalNumeroExterior').value.trim();
-        const numeroInterior = document.getElementById('modalNumeroInterior').value.trim();
-        const colonia = document.getElementById('modalColonia').value;
-        const idUsuario = document.getElementById('idUsuarioModal').value;
-        if (!calle || !numeroExterior || !colonia || colonia == "0") {
-        Swal.fire({
-        title: 'Campos incompletos',
-                text: 'Por favor completa todos los campos obligatorios',
-                icon: 'warning'
-        });
-        return;
-        }
+            const calle = document.getElementById('modalCalle').value.trim();
+            const numeroExterior = document.getElementById('modalNumeroExterior').value.trim();
+            const numeroInterior = document.getElementById('modalNumeroInterior').value.trim();
+            const colonia = document.getElementById('modalColonia').value;
+            const idUsuario = document.getElementById('idUsuarioModal').value;
+            
+            if (!calle || !numeroExterior || !colonia || colonia == "0") {
+                Swal.fire({
+                    title: 'Campos incompletos',
+                    text: 'Por favor completa todos los campos obligatorios',
+                    icon: 'warning'
+                });
+                return;
+            }
 
-        const modal = bootstrap.Modal.getInstance(document.getElementById('modalAgregarDireccion'));
-        modal.hide();
-        Swal.fire({
-        title: 'Guardando...',
+            const modal = bootstrap.Modal.getInstance(document.getElementById('modalAgregarDireccion'));
+            modal.hide();
+            
+            Swal.fire({
+                title: 'Guardando...',
                 text: 'Por favor espera',
                 allowOutsideClick: false,
                 didOpen: () => {
-        Swal.showLoading();
-        }
-        });
-        $.ajax({
-        type: 'POST',
+                    Swal.showLoading();
+                }
+            });
+            
+            $.ajax({
+                type: 'POST',
                 url: '/usuario/direccion/add',
                 data: {
-                idUsuario: idUsuario,
-                        calle: calle,
-                        numeroExterior: numeroExterior,
-                        numeroInterior: numeroInterior,
-                        'colonia.idColonia': colonia
+                    idUsuario: idUsuario,
+                    calle: calle,
+                    numeroExterior: numeroExterior,
+                    numeroInterior: numeroInterior,
+                    'colonia.idColonia': colonia
                 },
                 success: function(response) {
-                // Limpiar estados guardados
-                direccionEditStates = {};
-                Swal.fire({
-                title: '¡Éxito!',
+                    direccionEditStates = {};
+                    Swal.fire({
+                        title: '¡Éxito!',
                         text: 'Dirección agregada correctamente',
                         icon: 'success',
                         timer: 1000,
                         showConfirmButton: false
-                }).then(() => {
-                // Forzar recarga completa desde el servidor
-                window.location.href = '/usuario/detalle/' + idUsuario + '?t=' + new Date().getTime();
-                });
+                    }).then(() => {
+                        window.location.href = '/usuario/detalle/' + idUsuario + '?t=' + new Date().getTime();
+                    });
                 },
                 error: function() {
-                Swal.fire({
-                title: 'Error',
+                    Swal.fire({
+                        title: 'Error',
                         text: 'No se pudo agregar la dirección',
                         icon: 'error'
-                });
+                    });
                 }
-        });
+            });
         }
-
     </script>
-
 
     <script>
         function eliminarDireccion(idDireccion, idUsuario) {
-        Swal.fire({
-        title: '¿Estás seguro?',
+            Swal.fire({
+                title: '¿Estás seguro?',
                 text: "Esta dirección se eliminará permanentemente",
                 icon: 'warning',
                 showCancelButton: true,
@@ -1230,74 +1299,72 @@
                 confirmButtonText: '<i class="bi bi-trash"></i> Sí, eliminar',
                 cancelButtonText: '<i class="bi bi-x-circle"></i> Cancelar',
                 reverseButtons: true
-        }).then((result) => {
-        if (result.isConfirmed) {
-
-        Swal.fire({
-        title: 'Eliminando...',
-                text: 'Por favor espera',
-                allowOutsideClick: false,
-                didOpen: () => {
-        Swal.showLoading();
-        }
-        });
-        $.ajax({
-        type: 'POST',
-                url: '/usuario/direccion/delete',
-                data: {
-                idDireccion: idDireccion
-                },
-                success: function(response) {
-                if (response.correct) {
-                Swal.fire({
-                title: '¡Eliminado!',
-                        text: 'La dirección ha sido eliminada correctamente',
-                        icon: 'success',
-                        confirmButtonText: 'OK'
-                }).then(() => {
-                // Recargar la página para actualizar la lista
-                window.location.href = '/usuario/detalle/' + idUsuario;
-                });
-                } else {
-                Swal.fire({
-                title: 'Error',
-                        text: response.errorMessage || 'No se pudo eliminar la dirección',
-                        icon: 'error',
-                        confirmButtonText: 'OK'
-                });
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    Swal.fire({
+                        title: 'Eliminando...',
+                        text: 'Por favor espera',
+                        allowOutsideClick: false,
+                        didOpen: () => {
+                            Swal.showLoading();
+                        }
+                    });
+                    
+                    $.ajax({
+                        type: 'POST',
+                        url: '/usuario/direccion/delete',
+                        data: {
+                            idDireccion: idDireccion
+                        },
+                        success: function(response) {
+                            if (response.correct) {
+                                Swal.fire({
+                                    title: '¡Eliminado!',
+                                    text: 'La dirección ha sido eliminada correctamente',
+                                    icon: 'success',
+                                    confirmButtonText: 'OK'
+                                }).then(() => {
+                                    window.location.href = '/usuario/detalle/' + idUsuario;
+                                });
+                            } else {
+                                Swal.fire({
+                                    title: 'Error',
+                                    text: response.errorMessage || 'No se pudo eliminar la dirección',
+                                    icon: 'error',
+                                    confirmButtonText: 'OK'
+                                });
+                            }
+                        },
+                        error: function() {
+                            Swal.fire({
+                                title: 'Error',
+                                text: 'Hubo un problema al conectar con el servidor',
+                                icon: 'error',
+                                confirmButtonText: 'OK'
+                            });
+                        }
+                    });
                 }
-                },
-                error: function() {
-                Swal.fire({
-                title: 'Error',
-                        text: 'Hubo un problema al conectar con el servidor',
-                        icon: 'error',
-                        confirmButtonText: 'OK'
-                });
-                }
-        });
-        }
-        });
+            });
         }
     </script>
 
-    <!-- alertas de exito y error -->
-
+    <!-- Alertas de éxito y error -->
     <script th:if="${successMessage}" th:inline="javascript">
         Swal.fire({
-        title: "¡Éxito!",
-                text: [[${successMessage}]],
-                icon: "success",
-                draggable: true
+            title: "¡Éxito!",
+            text: [[${successMessage}]],
+            icon: "success",
+            draggable: true
         });
     </script>
 
     <script th:if="${errorMessage}" th:inline="javascript">
         Swal.fire({
-        title: "Error",
-                text: [[${errorMessage}]],
-                icon: "error",
-                draggable: true
+            title: "Error",
+            text: [[${errorMessage}]],
+            icon: "error",
+            draggable: true
         });
     </script>
 </th:block>

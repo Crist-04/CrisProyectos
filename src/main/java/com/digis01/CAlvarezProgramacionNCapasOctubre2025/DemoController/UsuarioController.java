@@ -2,9 +2,13 @@ package com.digis01.CAlvarezProgramacionNCapasOctubre2025.DemoController;
 
 import com.digis01.CAlvarezProgramacionNCapasOctubre2025.DAO.CodigoPostalDAOImplementation;
 import com.digis01.CAlvarezProgramacionNCapasOctubre2025.DAO.ColoniaDAOImplementation;
+import com.digis01.CAlvarezProgramacionNCapasOctubre2025.DAO.ColoniaJPADAOImplementation;
 import com.digis01.CAlvarezProgramacionNCapasOctubre2025.DAO.DireccionDAOImplementation;
+import com.digis01.CAlvarezProgramacionNCapasOctubre2025.DAO.DireccionJPADAOImplementation;
 import com.digis01.CAlvarezProgramacionNCapasOctubre2025.DAO.EstadoDAOImplementation;
+import com.digis01.CAlvarezProgramacionNCapasOctubre2025.DAO.EstadoDAOJPAImplementation;
 import com.digis01.CAlvarezProgramacionNCapasOctubre2025.DAO.MunicipioDAOImplementation;
+import com.digis01.CAlvarezProgramacionNCapasOctubre2025.DAO.MunicipioDAOJPAImplementation;
 import com.digis01.CAlvarezProgramacionNCapasOctubre2025.DAO.RolDAOImplementation;
 import com.digis01.CAlvarezProgramacionNCapasOctubre2025.DAO.RolJPADAOImplementation;
 import com.digis01.CAlvarezProgramacionNCapasOctubre2025.DAO.UsuarioDAOImplementation;
@@ -81,6 +85,15 @@ public class UsuarioController {
     private JdbcTemplate jdbcTemplate;
     @Autowired
     private UsuarioJPADAOImplementation usuarioJPADAOImplementation;
+
+    @Autowired
+    private EstadoDAOJPAImplementation estadoJPADAOImplementation;
+    @Autowired
+    private MunicipioDAOJPAImplementation municipioJPADAOImplementation;
+    @Autowired
+    private ColoniaJPADAOImplementation coloniaJPADAOImplementation;
+    @Autowired
+    private DireccionJPADAOImplementation direccionJPADAOImplementation;
 
 //    @GetMapping
 //    public String UsuarioIndex(Model model) {
@@ -520,8 +533,6 @@ public class UsuarioController {
 //
 //        return "UsuarioForm";
 //    }
-    
-    
     //para el add de jpa
     @GetMapping("/add")
     public String Add(Model model) {
@@ -619,8 +630,6 @@ public class UsuarioController {
 //        return "redirect:/usuario";
 //
 //    }
-    
-    
     //El de aqui es el Add de JPA
     @PostMapping("/add")
     public String Form(@Valid @ModelAttribute("Usuario") Usuario usuario,
@@ -629,10 +638,8 @@ public class UsuarioController {
             RedirectAttributes redirectAttributes,
             @RequestParam(value = "foto", required = false) MultipartFile foto) {
 
-        
         if (bindingResult.hasErrors()) {
 
-            
             if (usuario.getDirecciones() == null) {
                 usuario.setDirecciones(new ArrayList<>());
             }
@@ -649,7 +656,6 @@ public class UsuarioController {
                 }
             }
 
-            
             Result resultRoles = rolJPADAOImplementation.GetAll();
             model.addAttribute("roles", resultRoles.objects);
             model.addAttribute("Usuario", usuario);
@@ -657,7 +663,6 @@ public class UsuarioController {
             return "UsuarioForm";
         }
 
-        
         if (foto != null && !foto.isEmpty()) {
             try {
                 String nombreArchivo = foto.getOriginalFilename();
@@ -672,7 +677,6 @@ public class UsuarioController {
                         redirectAttributes.addFlashAttribute("errorMessage",
                                 "Formato de imagen no válido. Solo se permiten JPG, JPEG y PNG");
 
-                        
                         usuario.setDirecciones(usuario.getDirecciones() != null ? usuario.getDirecciones() : new ArrayList<>());
                         if (usuario.getDirecciones().isEmpty()) {
                             Direccion direccion = new Direccion();
@@ -694,7 +698,6 @@ public class UsuarioController {
             }
         }
 
-        
         try {
             Result result = usuarioJPADAOImplementation.Add(usuario);
 
@@ -706,7 +709,6 @@ public class UsuarioController {
                 redirectAttributes.addFlashAttribute("errorMessage",
                         "Error al crear el usuario: " + result.errorMessage);
 
-                
                 usuario.setDirecciones(usuario.getDirecciones() != null ? usuario.getDirecciones() : new ArrayList<>());
                 if (usuario.getDirecciones().isEmpty()) {
                     Direccion direccion = new Direccion();
@@ -727,72 +729,94 @@ public class UsuarioController {
         }
     }
 
+//    @GetMapping("estado/{idPais}")
+//    @ResponseBody
+//    public Result GetEstadoByIdPaid(@PathVariable("idPais") int idPais) {
+//        return estadoDAOImplementation.GetByIdPais(idPais);
+//    }
+    
     @GetMapping("estado/{idPais}")
     @ResponseBody
-    public Result GetEstadoByIdPaid(@PathVariable("idPais") int idPais) {
-        return estadoDAOImplementation.GetByIdPais(idPais);
+    public Result GetEstadoByIdPais(@PathVariable("idPais") int idPais) {
+        return estadoJPADAOImplementation.GetByIdPais(idPais);
     }
 
+//    @GetMapping("municipio/{idEstado}")
+//    @ResponseBody
+//    public Result GetByIdEstado(@PathVariable("idEstado") int idEstado) {
+//        return municipioDAOImplementation.GetByIdEstado(idEstado);
+//    }
+    
     @GetMapping("municipio/{idEstado}")
     @ResponseBody
     public Result GetByIdEstado(@PathVariable("idEstado") int idEstado) {
-        return municipioDAOImplementation.GetByIdEstado(idEstado);
+        return municipioJPADAOImplementation.GetByIdEstado(idEstado);
     }
 
+
+//    @GetMapping("colonia/{idMunicipio}")
+//    @ResponseBody
+//    public Result GetByIdMunicipio(@PathVariable("idMunicipio") int idMunicipio) {
+//        return coloniaDAOImplementation.GetByIdMunicipio(idMunicipio);
+//    }
+    
     @GetMapping("colonia/{idMunicipio}")
     @ResponseBody
     public Result GetByIdMunicipio(@PathVariable("idMunicipio") int idMunicipio) {
-        return coloniaDAOImplementation.GetByIdMunicipio(idMunicipio);
+        return coloniaJPADAOImplementation.GetByIdMunicipio(idMunicipio);
     }
 
+//    @GetMapping("codigopostal/{idColonia}")
+//    @ResponseBody
+//    public Result GetByIdColonia(@PathVariable("idColonia") int idColonia) {
+//        return codigoPostalDAOImplementation.GetByIdColonia(idColonia);
+//    }
+    
     @GetMapping("codigopostal/{idColonia}")
     @ResponseBody
     public Result GetByIdColonia(@PathVariable("idColonia") int idColonia) {
-        return codigoPostalDAOImplementation.GetByIdColonia(idColonia);
+        return coloniaJPADAOImplementation.GetByIdColonia(idColonia);
     }
-    
-    
-    
+
     @GetMapping("/detalle/{idUsuario}")
-public String DetalleUsuario(@PathVariable("idUsuario") int idUsuario, Model model) {
-    try {
-        System.out.println("=== Entrando a DetalleUsuario con ID: " + idUsuario + " ===");
-        
-        // Llamar al DAO de JPA para obtener el usuario
-        Result result = usuarioJPADAOImplementation.GetById(idUsuario);
-        
-        System.out.println("Result.correct: " + result.correct);
-        System.out.println("Result.errorMessage: " + result.errorMessage);
-        
-        if (result.correct && result.object != null) {
-            Usuario usuario = (Usuario) result.object;
-            
-            System.out.println("Usuario encontrado: " + usuario.getNombre());
-            System.out.println("Direcciones: " + (usuario.getDirecciones() != null ? usuario.getDirecciones().size() : "null"));
-            
-            model.addAttribute("usuario", usuario);
-            
-            // Cargar roles para el dropdown
-            Result resultRoles = rolJPADAOImplementation.GetAll();
-            model.addAttribute("roles", resultRoles.objects);
-            
-            System.out.println("=== Retornando vista UsuarioDetalle ===");
-            return "UsuarioDetail";
-            
-        } else {
-            System.out.println("=== Usuario no encontrado, redirigiendo ===");
-            model.addAttribute("errorMessage", "Usuario no encontrado: " + result.errorMessage);
+    public String DetalleUsuario(@PathVariable("idUsuario") int idUsuario, Model model) {
+        try {
+            System.out.println("=== Entrando a DetalleUsuario con ID: " + idUsuario + " ===");
+
+            // Llamar al DAO de JPA para obtener el usuario
+            Result result = usuarioJPADAOImplementation.GetById(idUsuario);
+
+            System.out.println("Result.correct: " + result.correct);
+            System.out.println("Result.errorMessage: " + result.errorMessage);
+
+            if (result.correct && result.object != null) {
+                Usuario usuario = (Usuario) result.object;
+
+                System.out.println("Usuario encontrado: " + usuario.getNombre());
+                System.out.println("Direcciones: " + (usuario.getDirecciones() != null ? usuario.getDirecciones().size() : "null"));
+
+                model.addAttribute("usuario", usuario);
+
+                // Cargar roles para el dropdown
+                Result resultRoles = rolJPADAOImplementation.GetAll();
+                model.addAttribute("roles", resultRoles.objects);
+
+                System.out.println("=== Retornando vista UsuarioDetalle ===");
+                return "UsuarioDetail";
+
+            } else {
+                System.out.println("=== Usuario no encontrado, redirigiendo ===");
+                model.addAttribute("errorMessage", "Usuario no encontrado: " + result.errorMessage);
+                return "redirect:/usuario";
+            }
+
+        } catch (Exception ex) {
+            System.out.println("=== ERROR en DetalleUsuario ===");
+            ex.printStackTrace();
+            model.addAttribute("errorMessage", "Error al cargar el detalle: " + ex.getMessage());
             return "redirect:/usuario";
         }
-        
-    } catch (Exception ex) {
-        System.out.println("=== ERROR en DetalleUsuario ===");
-        ex.printStackTrace();
-        model.addAttribute("errorMessage", "Error al cargar el detalle: " + ex.getMessage());
-        return "redirect:/usuario";
     }
-}
-    
 
 //    @PostMapping("/detalle")
 //    public String UpdateUsuario(@ModelAttribute("usuario") Usuario usuario, RedirectAttributes redirectAttributes) {
@@ -806,9 +830,7 @@ public String DetalleUsuario(@PathVariable("idUsuario") int idUsuario, Model mod
 //
 //        return "redirect:/usuario/detalle/" + usuario.getIdUsuario();
 //    }
-
-
-@PostMapping("/detalle")
+    @PostMapping("/detalle")
     public String UpdateUsuario(@ModelAttribute("usuario") Usuario usuario, RedirectAttributes redirectAttributes) {
         Result result = usuarioJPADAOImplementation.Update(usuario);
 
@@ -820,7 +842,7 @@ public String DetalleUsuario(@PathVariable("idUsuario") int idUsuario, Model mod
 
         return "redirect:/usuario/detalle/" + usuario.getIdUsuario();
     }
-
+    
     @PostMapping("/direccion/update")
     public String UpdateDireccion(
             @RequestParam("idDireccion") int idDireccion,
@@ -832,7 +854,6 @@ public String DetalleUsuario(@PathVariable("idUsuario") int idUsuario, Model mod
             RedirectAttributes redirectAttributes) {
 
         try {
-
             Direccion direccion = new Direccion();
             direccion.setIdDireccion(idDireccion);
             direccion.setCalle(calle);
@@ -843,18 +864,15 @@ public String DetalleUsuario(@PathVariable("idUsuario") int idUsuario, Model mod
             colonia.setIdColonia(idColonia);
             direccion.setColonia(colonia);
 
-            Result result = direccionDAOImplementation.UpdateDireccion(direccion, idUsuario);
+            Result result = direccionJPADAOImplementation.UpdateDireccion(direccion, idUsuario);
 
             if (result.correct) {
-                redirectAttributes.addFlashAttribute("successMessage",
-                        "La dirección se actualizó con éxito");
+                redirectAttributes.addFlashAttribute("successMessage", "La dirección se actualizó con éxito");
             } else {
-                redirectAttributes.addFlashAttribute("errorMessage",
-                        "Error al actualizar la dirección: " + result.errorMessage);
+                redirectAttributes.addFlashAttribute("errorMessage", "Error al actualizar la dirección: " + result.errorMessage);
             }
         } catch (Exception ex) {
-            redirectAttributes.addFlashAttribute("errorMessage",
-                    "Error inesperado al actualizar la dirección: " + ex.getMessage());
+            redirectAttributes.addFlashAttribute("errorMessage", "Error inesperado al actualizar la dirección: " + ex.getMessage());
         }
 
         return "redirect:/usuario/detalle/" + idUsuario;
@@ -879,18 +897,15 @@ public String DetalleUsuario(@PathVariable("idUsuario") int idUsuario, Model mod
             colonia.setIdColonia(idColonia);
             direccion.setColonia(colonia);
 
-            Result result = direccionDAOImplementation.AddDireccion(direccion, idUsuario);
+            Result result = direccionJPADAOImplementation.AddDireccion(direccion, idUsuario);
 
             if (result.correct) {
-                redirectAttributes.addFlashAttribute("successMessage",
-                        "La dirección se agregó con éxito");
+                redirectAttributes.addFlashAttribute("successMessage", "La dirección se agregó con éxito");
             } else {
-                redirectAttributes.addFlashAttribute("errorMessage",
-                        "Error: " + result.errorMessage);
+                redirectAttributes.addFlashAttribute("errorMessage", "Error: " + result.errorMessage);
             }
         } catch (Exception ex) {
-            redirectAttributes.addFlashAttribute("errorMessage",
-                    "Error: " + ex.getMessage());
+            redirectAttributes.addFlashAttribute("errorMessage", "Error: " + ex.getMessage());
         }
 
         return "redirect:/usuario/detalle/" + idUsuario;
@@ -898,11 +913,9 @@ public String DetalleUsuario(@PathVariable("idUsuario") int idUsuario, Model mod
 
     @PostMapping("/direccion/delete")
     @ResponseBody
-    public Result DeleteDireccion(
-            @RequestParam("idDireccion") int idDireccion) {
-
+    public Result DeleteDireccion(@RequestParam("idDireccion") int idDireccion) {
         try {
-            Result result = direccionDAOImplementation.DeleteDireccion(idDireccion);
+            Result result = direccionJPADAOImplementation.DeleteDireccion(idDireccion);
 
             if (result.correct) {
                 result.errorMessage = "La dirección se eliminó correctamente";
@@ -920,8 +933,111 @@ public String DetalleUsuario(@PathVariable("idUsuario") int idUsuario, Model mod
             return result;
         }
     }
-
 }
+    
+    
+
+//    @PostMapping("/direccion/update")
+//    public String UpdateDireccion(
+//            @RequestParam("idDireccion") int idDireccion,
+//            @RequestParam("idUsuario") int idUsuario,
+//            @RequestParam("calle") String calle,
+//            @RequestParam("numeroExterior") String numeroExterior,
+//            @RequestParam(value = "numeroInterior", required = false) String numeroInterior,
+//            @RequestParam("colonia.idColonia") int idColonia,
+//            RedirectAttributes redirectAttributes) {
+//
+//        try {
+//
+//            Direccion direccion = new Direccion();
+//            direccion.setIdDireccion(idDireccion);
+//            direccion.setCalle(calle);
+//            direccion.setNumeroExterior(numeroExterior);
+//            direccion.setNumeroInterior(numeroInterior != null && !numeroInterior.trim().isEmpty() ? numeroInterior : null);
+//
+//            Colonia colonia = new Colonia();
+//            colonia.setIdColonia(idColonia);
+//            direccion.setColonia(colonia);
+//
+//            Result result = direccionDAOImplementation.UpdateDireccion(direccion, idUsuario);
+//
+//            if (result.correct) {
+//                redirectAttributes.addFlashAttribute("successMessage",
+//                        "La dirección se actualizó con éxito");
+//            } else {
+//                redirectAttributes.addFlashAttribute("errorMessage",
+//                        "Error al actualizar la dirección: " + result.errorMessage);
+//            }
+//        } catch (Exception ex) {
+//            redirectAttributes.addFlashAttribute("errorMessage",
+//                    "Error inesperado al actualizar la dirección: " + ex.getMessage());
+//        }
+//
+//        return "redirect:/usuario/detalle/" + idUsuario;
+//    }
+//
+//    @PostMapping("/direccion/add")
+//    public String AddDireccion(
+//            @RequestParam("idUsuario") int idUsuario,
+//            @RequestParam("calle") String calle,
+//            @RequestParam("numeroExterior") String numeroExterior,
+//            @RequestParam(value = "numeroInterior", required = false) String numeroInterior,
+//            @RequestParam("colonia.idColonia") int idColonia,
+//            RedirectAttributes redirectAttributes) {
+//
+//        try {
+//            Direccion direccion = new Direccion();
+//            direccion.setCalle(calle);
+//            direccion.setNumeroExterior(numeroExterior);
+//            direccion.setNumeroInterior(numeroInterior);
+//
+//            Colonia colonia = new Colonia();
+//            colonia.setIdColonia(idColonia);
+//            direccion.setColonia(colonia);
+//
+//            Result result = direccionDAOImplementation.AddDireccion(direccion, idUsuario);
+//
+//            if (result.correct) {
+//                redirectAttributes.addFlashAttribute("successMessage",
+//                        "La dirección se agregó con éxito");
+//            } else {
+//                redirectAttributes.addFlashAttribute("errorMessage",
+//                        "Error: " + result.errorMessage);
+//            }
+//        } catch (Exception ex) {
+//            redirectAttributes.addFlashAttribute("errorMessage",
+//                    "Error: " + ex.getMessage());
+//        }
+//
+//        return "redirect:/usuario/detalle/" + idUsuario;
+//    }
+//
+//    @PostMapping("/direccion/delete")
+//    @ResponseBody
+//    public Result DeleteDireccion(
+//            @RequestParam("idDireccion") int idDireccion) {
+//
+//        try {
+//            Result result = direccionDAOImplementation.DeleteDireccion(idDireccion);
+//
+//            if (result.correct) {
+//                result.errorMessage = "La dirección se eliminó correctamente";
+//            } else {
+//                result.errorMessage = "No se pudo eliminar la dirección";
+//            }
+//
+//            return result;
+//
+//        } catch (Exception ex) {
+//            Result result = new Result();
+//            result.correct = false;
+//            result.errorMessage = "Error al eliminar dirección: " + ex.getMessage();
+//            result.ex = ex;
+//            return result;
+//        }
+//    }
+//
+//}
 
 //    @PostMapping("/add")
 //    public String Add(@ModelAttribute Usuario usuario) {
