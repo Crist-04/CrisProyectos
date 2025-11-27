@@ -124,38 +124,39 @@ public class MapperConfig {
         };
         
         Converter<UsuarioJPA, Usuario> usuarioConverter = context -> {
-            UsuarioJPA source = context.getSource();
-            if (source == null) {
-                return null;
-            }
-            
-            Usuario usuario = new Usuario();
-            usuario.setIdUsuario(source.IdUsuario);
-            usuario.setNombre(source.Nombre);
-            usuario.setUserName(source.Username);
-            usuario.setApellidoPaterno(source.ApellidoPaterno);
-            usuario.setApellidoMaterno(source.ApellidoMaterno);
-            usuario.setEmail(source.Email);
-            usuario.setPassword(source.Password);
-            usuario.setFechaNacimiento(source.FechaNacimiento);
-            usuario.setSexo(source.Sexo);
-            usuario.setTelefono(source.Telefono);
-            usuario.setCelular(source.Celular);
-            usuario.setCURP(source.CURP);
-            
-            if (source.getRol() != null) {
-                usuario.setRol(rolConverter.convert(context.create(source.getRol(), Rol.class)));
-            }
-            
-            if (source.getDireccionesJPA() != null && !source.getDireccionesJPA().isEmpty()) {
-                ArrayList<Direccion> direcciones = source.getDireccionesJPA().stream()
-                        .map(direccionJPA -> direccionConverter.convert(context.create(direccionJPA, Direccion.class)))
-                        .collect(Collectors.toCollection(ArrayList::new));
-                usuario.setDirecciones(direcciones);
-            }
-            
-            return usuario;
-        };
+    UsuarioJPA source = context.getSource();
+    if (source == null) {
+        return null;
+    }
+    
+    Usuario usuario = new Usuario();
+    usuario.setIdUsuario(source.getIdUsuario());
+    usuario.setNombre(source.getNombre());
+    usuario.setUserName(source.getUsername());  // CORREGIDO: Usando getter
+    usuario.setApellidoPaterno(source.getApellidoPaterno());
+    usuario.setApellidoMaterno(source.getApellidoMaterno());
+    usuario.setEmail(source.getEmail());
+    usuario.setPassword(source.getPassword());
+    usuario.setFechaNacimiento(source.getFechaNacimiento());
+    usuario.setSexo(source.getSexo());
+    usuario.setTelefono(source.getTelefono());
+    usuario.setCelular(source.getCelular());
+    usuario.setCURP(source.getCURP());
+    usuario.setImagen(source.getImagen());
+    
+    if (source.getRol() != null) {
+        usuario.setRol(rolConverter.convert(context.create(source.getRol(), Rol.class)));
+    }
+    
+    if (source.getDireccionesJPA() != null && !source.getDireccionesJPA().isEmpty()) {
+        ArrayList<Direccion> direcciones = source.getDireccionesJPA().stream()
+                .map(direccionJPA -> direccionConverter.convert(context.create(direccionJPA, Direccion.class)))
+                .collect(Collectors.toCollection(ArrayList::new));
+        usuario.setDirecciones(direcciones);
+    }
+    
+    return usuario;
+};
 
         //Add
         Converter<Rol, RolJPA> rolMLtoJPAConverter = context -> {
@@ -211,7 +212,7 @@ Converter<Usuario, UsuarioJPA> usuarioMLtoJPAConverter = context -> {
     UsuarioJPA usuarioJPA = new UsuarioJPA();
     usuarioJPA.setIdUsuario(source.getIdUsuario());
     usuarioJPA.setNombre(source.getNombre());
-    usuarioJPA.setUsername(source.getUserName());
+    usuarioJPA.setUsername(source.getUserName());  // CORREGIDO: Usando setter
     usuarioJPA.setApellidoPaterno(source.getApellidoPaterno());
     usuarioJPA.setApellidoMaterno(source.getApellidoMaterno());
     usuarioJPA.setEmail(source.getEmail());
@@ -221,15 +222,13 @@ Converter<Usuario, UsuarioJPA> usuarioMLtoJPAConverter = context -> {
     usuarioJPA.setTelefono(source.getTelefono());
     usuarioJPA.setCelular(source.getCelular());
     usuarioJPA.setCURP(source.getCURP());
-    usuarioJPA.setImagen(source.getImagen()); 
-    
+    usuarioJPA.setImagen(source.getImagen());
     
     if (source.getRol() != null && source.getRol().getIdRol() > 0) {
         RolJPA rolJPA = new RolJPA();
         rolJPA.setIdRol(source.getRol().getIdRol());
         usuarioJPA.setRol(rolJPA);
     }
-    
     
     if (source.getDirecciones() != null && !source.getDirecciones().isEmpty()) {
         List<DireccionJPA> direccionesJPA = new ArrayList<>();
@@ -240,13 +239,11 @@ Converter<Usuario, UsuarioJPA> usuarioMLtoJPAConverter = context -> {
             direccionJPA.setNumeroInterior(direccion.getNumeroInterior());
             direccionJPA.setNumeroExterior(direccion.getNumeroExterior());
             
-            
             if (direccion.getColonia() != null && direccion.getColonia().getIdColonia() > 0) {
                 ColoniaJPA coloniaJPA = new ColoniaJPA();
                 coloniaJPA.setIdColonia(direccion.getColonia().getIdColonia());
                 direccionJPA.setColoniaJPA(coloniaJPA);
             }
-            
             
             direccionJPA.setUsuarioJPA(usuarioJPA);
             direccionesJPA.add(direccionJPA);

@@ -21,40 +21,40 @@ public class UsuarioJPA {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "idusuario")
-    public int IdUsuario;
+    private int IdUsuario;
 
     @Column(name = "nombre")
-    public String Nombre;
+    private String Nombre;
 
     @Column(name = "username")
-    public String Username;
+    private String Username;
 
     @Column(name = "apellidopaterno")
-    public String ApellidoPaterno;
+    private String ApellidoPaterno;
 
     @Column(name = "apellidomaterno")
-    public String ApellidoMaterno;
+    private String ApellidoMaterno;
 
     @Column(name = "email")
-    public String Email;
+    private String Email;
 
     @Column(name = "password")
-    public String Password;
+    private String Password;
 
     @Column(name = "fechanacimiento")
-    public Date FechaNacimiento;
+    private Date FechaNacimiento;
 
     @Column(name = "sexo")
-    public String Sexo;
+    private String Sexo;
 
     @Column(name = "telefono")
-    public String Telefono;
+    private String Telefono;
 
     @Column(name = "celular")
-    public String Celular;
+    private String Celular;
 
     @Column(name = "curp")
-    public String CURP;
+    private String CURP;
     
     @Column(name = "imagen")
     public String Imagen;
