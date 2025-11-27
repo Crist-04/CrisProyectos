@@ -18,10 +18,10 @@ public class EstadoJPA {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "idestado")
-    private int IdEstado;
+    public int IdEstado;
     
     @Column(name = "nombre")
-    private String Nombre;
+    public String Nombre;
     
     @ManyToOne
     @JoinColumn(name = "idpais")

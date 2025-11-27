@@ -18,13 +18,13 @@ public class ColoniaJPA {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "idcolonia")
-    private int IdColonia;
+    public int IdColonia;
     
     @Column(name = "nombre")
-    private String Nombre;
+    public String Nombre;
     
     @Column(name = "codigopostal")
-    private String CodigoPostal;
+    public String CodigoPostal;
     
     @ManyToOne
     @JoinColumn (name = "idmunicipio")

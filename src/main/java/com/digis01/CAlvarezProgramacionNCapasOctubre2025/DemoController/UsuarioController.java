@@ -135,240 +135,7 @@ public class UsuarioController {
         // Inserción con carga masiva
         return "CargaMasiva";
     }
-//    @GetMapping("/cargaMasiva/procesar")
-//    @Transactional
-//    public String CargaMasivaProcesar(HttpSession session, RedirectAttributes redirectAttributes) {
-//
-//        String path = session.getAttribute("archivoCargaMasiva").toString();
-//        session.removeAttribute("archivoCargaMasiva");
-//
-//        
-//        String extension = path.substring(path.lastIndexOf(".") + 1).toLowerCase();
-//
-//        File archivo = new File(path);
-//        Result result;
-//
-//       
-//        if (extension.equals("txt")) {
-//            result = LecturaArchivoTXTYGuardar(archivo);
-//        } else if (extension.equals("xlsx")) {
-//            result = LecturaArchivoXLSXYGuardar(archivo);
-//        } else {
-//            redirectAttributes.addFlashAttribute("errorMessage", "Tipo de archivo no válido. Solo TXT o XLSX.");
-//            return "redirect:/usuario/cargaMasiva";
-//        }
-//
-//        
-//        if (result.correct) {
-//            List<Usuario> usuarios = (List<Usuario>) result.object;
-//            redirectAttributes.addFlashAttribute("successMessage",
-//                    "Carga completada: " + usuarios.size() + " usuarios insertados correctamente");
-//        } else {
-//            List<ErrorCarga> errores = (List<ErrorCarga>) result.object;
-//            redirectAttributes.addFlashAttribute("erroresCarga", errores);
-//            redirectAttributes.addFlashAttribute("errorMessage", result.errorMessage);
-//        }
-//
-//        return "redirect:/usuario";
-//    }
-//
-//
-//    public Result LecturaArchivoTXTYGuardar(File archivo) {
-//        Result result = new Result();
-//        List<Usuario> usuarios = new ArrayList<>();
-//        List<ErrorCarga> errores = new ArrayList<>();
-//
-//        try (InputStream inputStream = new FileInputStream(archivo); BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(inputStream));) {
-//
-//            String linea = "";
-//            int lineaNumero = 0;
-//
-//            while ((linea = bufferedReader.readLine()) != null) {
-//                lineaNumero++;
-//
-//                if (linea.trim().isEmpty()) {
-//                    continue;
-//                }
-//
-//                String[] campos = linea.split("\\|", -1);
-//
-//                if (campos.length != 12) {
-//                    ErrorCarga error = new ErrorCarga();
-//                    error.linea = lineaNumero;
-//                    error.campo = "General";
-//                    error.descripcion = "Se esperan 12 campos, se encontraron " + campos.length;
-//                    errores.add(error);
-//                    continue;
-//                }
-//
-//                try {
-//                    Usuario usuario = new Usuario();
-//                    usuario.setNombre(campos[0].trim());
-//                    usuario.setApellidoPaterno(campos[1].trim());
-//                    usuario.setApellidoMaterno(campos[2].trim());
-//                    usuario.setUserName(campos[3].trim());
-//                    usuario.setEmail(campos[4].trim());
-//                    usuario.setPassword(campos[5].trim());
-//                    usuario.setCelular(campos[6].trim());
-//                    usuario.setTelefono(campos[7].trim());
-//                    usuario.setCURP(campos[8].trim());
-//                    usuario.setSexo(campos[9].trim());
-//
-//                    SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
-//                    usuario.setFechaNacimiento(sdf.parse(campos[10].trim()));
-//
-//                    Rol rol = new Rol();
-//                    rol.setIdRol(Integer.parseInt(campos[11].trim()));
-//                    usuario.setRol(rol);
-//
-//                   
-//                    usuario.setDirecciones(new ArrayList<>());
-//                    Direccion direccionTemporal = new Direccion();
-//                    direccionTemporal.setCalle("");
-//                    direccionTemporal.setNumeroInterior("");
-//                    direccionTemporal.setNumeroExterior("S/N");
-//
-//                    Colonia coloniaTemporal = new Colonia();
-//                    coloniaTemporal.setIdColonia(1110);
-//                    direccionTemporal.setColonia(coloniaTemporal);
-//
-//                    usuario.getDirecciones().add(direccionTemporal);
-//
-//                    
-//                    Result addResult = usuarioDAOImplementation.Add(usuario);
-//
-//                    if (addResult.correct) {
-//                        usuarios.add(usuario);
-//                    } else {
-//                        ErrorCarga error = new ErrorCarga();
-//                        error.linea = lineaNumero;
-//                        error.campo = "Base de datos";
-//                        error.descripcion = addResult.errorMessage;
-//                        errores.add(error);
-//                    }
-//
-//                } catch (Exception ex) {
-//                    ErrorCarga error = new ErrorCarga();
-//                    error.linea = lineaNumero;
-//                    error.campo = "General";
-//                    error.descripcion = ex.getMessage();
-//                    errores.add(error);
-//                }
-//            }
-//
-//        } catch (Exception ex) {
-//            result.correct = false;
-//            result.errorMessage = "Error al leer archivo: " + ex.getMessage();
-//            return result;
-//        }
-//
-//        if (errores.isEmpty()) {
-//            result.correct = true;
-//            result.object = usuarios;
-//            result.errorMessage = "Todos los usuarios se cargaron correctamente";
-//        } else {
-//            result.correct = false;
-//            result.object = errores;
-//            result.errorMessage = "Se encontraron " + errores.size() + " errores durante la carga";
-//        }
-//
-//        return result;
-//    }
-//
-//
-//    public Result LecturaArchivoXLSXYGuardar(File archivo) {
-//        Result result = new Result();
-//        List<Usuario> usuarios = new ArrayList<>();
-//        List<ErrorCarga> errores = new ArrayList<>();
-//
-//        try (InputStream inputStream = new FileInputStream(archivo); XSSFWorkbook workbook = new XSSFWorkbook(inputStream)) {
-//
-//            XSSFSheet workSheet = workbook.getSheetAt(0);
-//            int lineaNumero = 0;
-//
-//            for (Row row : workSheet) {
-//                lineaNumero++;
-//
-//               
-//                if (lineaNumero == 1 && row.getCell(0).getCellType().toString().equals("STRING")) {
-//                    continue;
-//                }
-//
-//                try {
-//                    Usuario usuario = new Usuario();
-//                    usuario.setNombre(row.getCell(0).toString().trim());
-//                    usuario.setApellidoPaterno(row.getCell(1).toString().trim());
-//                    usuario.setApellidoMaterno(row.getCell(2).toString().trim());
-//                    usuario.setUserName(row.getCell(3).toString().trim());
-//                    usuario.setEmail(row.getCell(4).toString().trim());
-//                    usuario.setPassword(row.getCell(5).toString().trim());
-//
-//                    DecimalFormat df = new DecimalFormat("#");
-//                    usuario.setTelefono(df.format(row.getCell(6).getNumericCellValue()));
-//                    usuario.setCelular(df.format(row.getCell(7).getNumericCellValue()));
-//
-//                    usuario.setCURP(row.getCell(8).toString().trim());
-//                    usuario.setSexo(row.getCell(9).toString().trim());
-//                    usuario.setFechaNacimiento(row.getCell(10).getDateCellValue());
-//
-//                    Rol rol = new Rol();
-//                    int idRol = (int) row.getCell(11).getNumericCellValue();
-//                    rol.setIdRol(idRol);
-//                    usuario.setRol(rol);
-//
-//                   
-//                    usuario.setDirecciones(new ArrayList<>());
-//                    Direccion direccionTemporal = new Direccion();
-//                    direccionTemporal.setCalle("");
-//                    direccionTemporal.setNumeroInterior("");
-//                    direccionTemporal.setNumeroExterior("S/N");
-//
-//                    Colonia coloniaTemporal = new Colonia();
-//                    coloniaTemporal.setIdColonia(1110);
-//                    direccionTemporal.setColonia(coloniaTemporal);
-//
-//                    usuario.getDirecciones().add(direccionTemporal);
-//
-//                    
-//                    Result addResult = usuarioDAOImplementation.Add(usuario);
-//
-//                    if (addResult.correct) {
-//                        usuarios.add(usuario);
-//                    } else {
-//                        ErrorCarga error = new ErrorCarga();
-//                        error.linea = lineaNumero;
-//                        error.campo = "Base de datos";
-//                        error.descripcion = addResult.errorMessage;
-//                        errores.add(error);
-//                    }
-//
-//                } catch (Exception ex) {
-//                    ErrorCarga error = new ErrorCarga();
-//                    error.linea = lineaNumero;
-//                    error.campo = "General";
-//                    error.descripcion = ex.getMessage();
-//                    errores.add(error);
-//                }
-//            }
-//
-//        } catch (Exception ex) {
-//            result.correct = false;
-//            result.errorMessage = "Error al leer archivo XLSX: " + ex.getMessage();
-//            return result;
-//        }
-//
-//        if (errores.isEmpty()) {
-//            result.correct = true;
-//            result.object = usuarios;
-//            result.errorMessage = "Todos los usuarios se cargaron correctamente";
-//        } else {
-//            result.correct = false;
-//            result.object = errores;
-//            result.errorMessage = "Se encontraron " + errores.size() + " errores durante la carga";
-//        }
-//
-//        return result;
-//    }
+
 
     @PostMapping("/cargaMasiva")
     public String CargaMasiva(@RequestParam("archivo") MultipartFile archivo, Model model, HttpSession session) throws IOException {
@@ -499,284 +266,166 @@ public class UsuarioController {
         return usuarios;
     }
 
-//    @GetMapping("/add")
-//    public String Add(Model model) {
-////        Usuario usuario = new Usuario();
-////        usuario.setRol(new Rol());
-////        usuario.setDireccion(new Direccion());
-////        usuario.getDireccion().Colonia.getIdColonia();
-////        usuario.getDireccion().Colonia.getNombre();
-//////    usuario.getDireccion().setColonia(new Colonia());
-//        model.addAttribute("Usuario", new Usuario());
-//        model.addAttribute("roles", rolDAOImplementation.GetAll());
-//        Result resultRoles = rolDAOImplementation.GetAll();
-//
-//    
-//    // Pasar la lista de roles al modelo
-//    model.addAttribute("roles", resultRoles.objects);
-//        return "UsuarioForm";
-//    }
-//    @GetMapping("/add")
-//    public String Add(Model model) {
-//        Usuario usuario = new Usuario();
-//
-//        usuario.setDirecciones(new ArrayList<>());
-//
-//        Direccion direccion = new Direccion();
-//        direccion.setColonia(new Colonia());
-//        usuario.getDirecciones().add(direccion);
-//
-//        model.addAttribute("Usuario", usuario);
-//
-//        Result resultRoles = rolDAOImplementation.GetAll();
-//        model.addAttribute("roles", resultRoles.objects);
-//
-//        return "UsuarioForm";
-//    }
-    //para el add de jpa
-    @GetMapping("/add")
-    public String Add(Model model) {
-        Usuario usuario = new Usuario();
-        usuario.setDirecciones(new ArrayList<>());
 
-        Direccion direccion = new Direccion();
-        direccion.setColonia(new Colonia());
-        usuario.getDirecciones().add(direccion);
+    //El de aqui es el Add de JPA
+    // ============================================
+// AGREGAR ESTE MÉTODO GET ANTES DEL @PostMapping("/add")
+// ============================================
 
-        usuario.setRol(new Rol());
+@GetMapping("/add")
+public String ShowAddForm(Model model) {
+    System.out.println("=== Mostrando formulario de agregar usuario ===");
+    
+    // Crear un nuevo usuario vacío
+    Usuario usuario = new Usuario();
+    
+    // Inicializar la lista de direcciones con una dirección vacía
+    Direccion direccion = new Direccion();
+    direccion.setColonia(new Colonia());
+    
+    List<Direccion> direcciones = new ArrayList<>();
+    direcciones.add(direccion);
+    usuario.setDireccion(direccion);
+    
+    // Cargar roles
+    Result resultRoles = rolJPADAOImplementation.GetAll();
+    
+    // Agregar al modelo
+    model.addAttribute("Usuario", usuario);
+    model.addAttribute("roles", resultRoles.objects);
+    
+    return "UsuarioForm";
+}
 
-        model.addAttribute("Usuario", usuario);
+// ============================================
+// TU @PostMapping("/add") EXISTENTE SE QUEDA IGUAL
+// ============================================
 
+@PostMapping("/add")
+public String Form(@Valid @ModelAttribute("Usuario") Usuario usuario,
+        BindingResult bindingResult,
+        Model model,
+        RedirectAttributes redirectAttributes,
+        @RequestParam(value = "foto", required = false) MultipartFile foto) {
+    
+    if (bindingResult.hasErrors()) {
+        // Asegurar que direcciones no sea null
+        if (usuario.getDirecciones() == null) {
+            usuario.setDirecciones(new ArrayList<>());
+        }
+        
+        if (usuario.getDirecciones().isEmpty()) {
+            Direccion direccion = new Direccion();
+            direccion.setColonia(new Colonia());
+            usuario.getDirecciones().add(direccion);
+        } else {
+            if (usuario.getDirecciones().get(0) != null) {
+                if (usuario.getDirecciones().get(0).getColonia() == null) {
+                    usuario.getDirecciones().get(0).setColonia(new Colonia());
+                }
+            }
+        }
+        
         Result resultRoles = rolJPADAOImplementation.GetAll();
         model.addAttribute("roles", resultRoles.objects);
-
+        model.addAttribute("Usuario", usuario);
+        
         return "UsuarioForm";
     }
-
-    @PostMapping
-    public String UsuarioIndex(@ModelAttribute("usuarioBusqueda") Usuario usuarioBusqueda, Model model) {
-
-        String nombre = usuarioBusqueda.getNombre() != null ? usuarioBusqueda.getNombre() : "";
-        String aPaterno = usuarioBusqueda.getApellidoPaterno() != null ? usuarioBusqueda.getApellidoPaterno() : "";
-        String aMaterno = usuarioBusqueda.getApellidoMaterno() != null ? usuarioBusqueda.getApellidoMaterno() : "";
-        int idRol = usuarioBusqueda.getRol() != null ? usuarioBusqueda.getRol().getIdRol() : 0;
-
-        Result result = usuarioDAOImplementation.GetAllDinamico(nombre, aPaterno, aMaterno, idRol);
-
-        Result rolesResult = rolDAOImplementation.GetAll();
-
-        model.addAttribute("usuarios", result.objects);
-        model.addAttribute("roles", rolesResult.objects);
-        model.addAttribute("usuarioBusqueda", usuarioBusqueda);
-
-        return "UsuarioIndex";
-    }
-
-//    @PostMapping("add")
-//    public String Form(@Valid @ModelAttribute("Usuario") Usuario usuario,
-//            BindingResult bindingResult,
-//            Model model,
-//            RedirectAttributes redirectAttributes,
-//            @RequestParam("foto") MultipartFile foto) {
-//
-//        if (bindingResult.hasErrors()) {
-//
-//            if (usuario.getDirecciones() == null) {
-//                usuario.setDirecciones(new ArrayList<>());
-//            }
-//
-//            if (usuario.getDirecciones().isEmpty()) {
-//                Direccion direccion = new Direccion();
-//                direccion.setColonia(new Colonia());
-//                usuario.getDirecciones().add(direccion);
-//            } else {
-//                if (usuario.getDirecciones().get(0) != null) {
-//                    if (usuario.getDirecciones().get(0).getColonia() == null) {
-//                        usuario.getDirecciones().get(0).setColonia(new Colonia());
-//                    }
-//                }
-//            }
-//
-//            //Recargar los roles
-//            Result resultRoles = rolDAOImplementation.GetAll();
-//            model.addAttribute("roles", resultRoles.objects);
-//
-//            model.addAttribute("Usuario", usuario);
-//
-//            return "UsuarioForm";
-//        }
-//
-//        if (foto != null) {
-//            try {
-//
-//                String extension = foto.getOriginalFilename().split("\\.")[1];
-//                if (extension.equals("jpg") || extension.equals("png")) {
-//                    byte[] byteImagen = foto.getBytes();
-//                    String imagenBase64 = Base64.getEncoder().encodeToString(byteImagen);
-//                    usuario.setImagen(imagenBase64);
-//
-//                }
-//
-//            } catch (IOException ex) {
-//                Logger.getLogger(UsuarioController.class.getName()).log(Level.SEVERE, null, ex);
-//
-//            }
-//        }
-//
-//        usuarioDAOImplementation.Add(usuario);
-//
-//        redirectAttributes.addFlashAttribute("successMessage", "El usuario: " + usuario.getUserName() + " se creo con exito");
-//
-//        return "redirect:/usuario";
-//
-//    }
-    //El de aqui es el Add de JPA
-    @PostMapping("/add")
-    public String Form(@Valid @ModelAttribute("Usuario") Usuario usuario,
-            BindingResult bindingResult,
-            Model model,
-            RedirectAttributes redirectAttributes,
-            @RequestParam(value = "foto", required = false) MultipartFile foto) {
-
-        if (bindingResult.hasErrors()) {
-
-            if (usuario.getDirecciones() == null) {
-                usuario.setDirecciones(new ArrayList<>());
+    
+    // Procesar imagen
+    if (foto != null && !foto.isEmpty()) {
+        try {
+            String nombreArchivo = foto.getOriginalFilename();
+            if (nombreArchivo != null && nombreArchivo.contains(".")) {
+                String extension = nombreArchivo.substring(nombreArchivo.lastIndexOf(".") + 1).toLowerCase();
+                
+                if (extension.equals("jpg") || extension.equals("png") || extension.equals("jpeg")) {
+                    byte[] byteImagen = foto.getBytes();
+                    String imagenBase64 = Base64.getEncoder().encodeToString(byteImagen);
+                    usuario.setImagen(imagenBase64);
+                } else {
+                    redirectAttributes.addFlashAttribute("errorMessage",
+                            "Formato de imagen no válido. Solo se permiten JPG, JPEG y PNG");
+                    
+                    usuario.setDirecciones(usuario.getDirecciones() != null ? usuario.getDirecciones() : new ArrayList<>());
+                    if (usuario.getDirecciones().isEmpty()) {
+                        Direccion direccion = new Direccion();
+                        direccion.setColonia(new Colonia());
+                        usuario.getDirecciones().add(direccion);
+                    }
+                    
+                    Result resultRoles = rolJPADAOImplementation.GetAll();
+                    model.addAttribute("roles", resultRoles.objects);
+                    model.addAttribute("Usuario", usuario);
+                    return "UsuarioForm";
+                }
             }
-
+        } catch (IOException ex) {
+            Logger.getLogger(UsuarioController.class.getName()).log(Level.SEVERE, null, ex);
+            redirectAttributes.addFlashAttribute("errorMessage",
+                    "Error al procesar la imagen: " + ex.getMessage());
+            return "redirect:/usuario/add";
+        }
+    }
+    
+    // Guardar usuario
+    try {
+        Result result = usuarioJPADAOImplementation.Add(usuario);
+        
+        if (result.correct) {
+            redirectAttributes.addFlashAttribute("successMessage",
+                    "El usuario: " + usuario.getUserName() + " se creó con éxito");
+            return "redirect:/usuario";
+        } else {
+            redirectAttributes.addFlashAttribute("errorMessage",
+                    "Error al crear el usuario: " + result.errorMessage);
+            
+            usuario.setDirecciones(usuario.getDirecciones() != null ? usuario.getDirecciones() : new ArrayList<>());
             if (usuario.getDirecciones().isEmpty()) {
                 Direccion direccion = new Direccion();
                 direccion.setColonia(new Colonia());
                 usuario.getDirecciones().add(direccion);
-            } else {
-                if (usuario.getDirecciones().get(0) != null) {
-                    if (usuario.getDirecciones().get(0).getColonia() == null) {
-                        usuario.getDirecciones().get(0).setColonia(new Colonia());
-                    }
-                }
             }
-
+            
             Result resultRoles = rolJPADAOImplementation.GetAll();
             model.addAttribute("roles", resultRoles.objects);
             model.addAttribute("Usuario", usuario);
-
             return "UsuarioForm";
         }
-
-        if (foto != null && !foto.isEmpty()) {
-            try {
-                String nombreArchivo = foto.getOriginalFilename();
-                if (nombreArchivo != null && nombreArchivo.contains(".")) {
-                    String extension = nombreArchivo.substring(nombreArchivo.lastIndexOf(".") + 1).toLowerCase();
-
-                    if (extension.equals("jpg") || extension.equals("png") || extension.equals("jpeg")) {
-                        byte[] byteImagen = foto.getBytes();
-                        String imagenBase64 = Base64.getEncoder().encodeToString(byteImagen);
-                        usuario.setImagen(imagenBase64);
-                    } else {
-                        redirectAttributes.addFlashAttribute("errorMessage",
-                                "Formato de imagen no válido. Solo se permiten JPG, JPEG y PNG");
-
-                        usuario.setDirecciones(usuario.getDirecciones() != null ? usuario.getDirecciones() : new ArrayList<>());
-                        if (usuario.getDirecciones().isEmpty()) {
-                            Direccion direccion = new Direccion();
-                            direccion.setColonia(new Colonia());
-                            usuario.getDirecciones().add(direccion);
-                        }
-
-                        Result resultRoles = rolJPADAOImplementation.GetAll();
-                        model.addAttribute("roles", resultRoles.objects);
-                        model.addAttribute("Usuario", usuario);
-                        return "UsuarioForm";
-                    }
-                }
-            } catch (IOException ex) {
-                Logger.getLogger(UsuarioController.class.getName()).log(Level.SEVERE, null, ex);
-                redirectAttributes.addFlashAttribute("errorMessage",
-                        "Error al procesar la imagen: " + ex.getMessage());
-                return "redirect:/usuario/add";
-            }
-        }
-
-        try {
-            Result result = usuarioJPADAOImplementation.Add(usuario);
-
-            if (result.correct) {
-                redirectAttributes.addFlashAttribute("successMessage",
-                        "El usuario: " + usuario.getUserName() + " se creó con éxito");
-                return "redirect:/usuario";
-            } else {
-                redirectAttributes.addFlashAttribute("errorMessage",
-                        "Error al crear el usuario: " + result.errorMessage);
-
-                usuario.setDirecciones(usuario.getDirecciones() != null ? usuario.getDirecciones() : new ArrayList<>());
-                if (usuario.getDirecciones().isEmpty()) {
-                    Direccion direccion = new Direccion();
-                    direccion.setColonia(new Colonia());
-                    usuario.getDirecciones().add(direccion);
-                }
-
-                Result resultRoles = rolJPADAOImplementation.GetAll();
-                model.addAttribute("roles", resultRoles.objects);
-                model.addAttribute("Usuario", usuario);
-                return "UsuarioForm";
-            }
-        } catch (Exception ex) {
-            redirectAttributes.addFlashAttribute("errorMessage",
-                    "Error inesperado: " + ex.getMessage());
-            ex.printStackTrace();
-            return "redirect:/usuario/add";
-        }
+    } catch (Exception ex) {
+        redirectAttributes.addFlashAttribute("errorMessage",
+                "Error inesperado: " + ex.getMessage());
+        ex.printStackTrace();
+        return "redirect:/usuario/add";
     }
+}
 
-//    @GetMapping("estado/{idPais}")
-//    @ResponseBody
-//    public Result GetEstadoByIdPaid(@PathVariable("idPais") int idPais) {
-//        return estadoDAOImplementation.GetByIdPais(idPais);
-//    }
+
     
     @GetMapping("estado/{idPais}")
-    @ResponseBody
-    public Result GetEstadoByIdPais(@PathVariable("idPais") int idPais) {
-        return estadoJPADAOImplementation.GetByIdPais(idPais);
-    }
+@ResponseBody
+public Result GetEstadoByIdPais(@PathVariable("idPais") int idPais) {
+    return estadoJPADAOImplementation.GetByIdPais(idPais);
+}
 
-//    @GetMapping("municipio/{idEstado}")
-//    @ResponseBody
-//    public Result GetByIdEstado(@PathVariable("idEstado") int idEstado) {
-//        return municipioDAOImplementation.GetByIdEstado(idEstado);
-//    }
-    
-    @GetMapping("municipio/{idEstado}")
-    @ResponseBody
-    public Result GetByIdEstado(@PathVariable("idEstado") int idEstado) {
-        return municipioJPADAOImplementation.GetByIdEstado(idEstado);
-    }
+@GetMapping("municipio/{idEstado}")
+@ResponseBody
+public Result GetByIdEstado(@PathVariable("idEstado") int idEstado) {
+    return municipioJPADAOImplementation.GetByIdEstado(idEstado);
+}
 
+@GetMapping("colonia/{idMunicipio}")
+@ResponseBody
+public Result GetByIdMunicipio(@PathVariable("idMunicipio") int idMunicipio) {
+    return coloniaJPADAOImplementation.GetByIdMunicipio(idMunicipio);
+}
 
-//    @GetMapping("colonia/{idMunicipio}")
-//    @ResponseBody
-//    public Result GetByIdMunicipio(@PathVariable("idMunicipio") int idMunicipio) {
-//        return coloniaDAOImplementation.GetByIdMunicipio(idMunicipio);
-//    }
-    
-    @GetMapping("colonia/{idMunicipio}")
-    @ResponseBody
-    public Result GetByIdMunicipio(@PathVariable("idMunicipio") int idMunicipio) {
-        return coloniaJPADAOImplementation.GetByIdMunicipio(idMunicipio);
-    }
-
-//    @GetMapping("codigopostal/{idColonia}")
-//    @ResponseBody
-//    public Result GetByIdColonia(@PathVariable("idColonia") int idColonia) {
-//        return codigoPostalDAOImplementation.GetByIdColonia(idColonia);
-//    }
-    
-    @GetMapping("codigopostal/{idColonia}")
-    @ResponseBody
-    public Result GetByIdColonia(@PathVariable("idColonia") int idColonia) {
-        return coloniaJPADAOImplementation.GetByIdColonia(idColonia);
-    }
+@GetMapping("codigopostal/{idColonia}")
+@ResponseBody
+public Result GetByIdColonia(@PathVariable("idColonia") int idColonia) {
+    return coloniaJPADAOImplementation.GetByIdColonia(idColonia);
+}
 
     @GetMapping("/detalle/{idUsuario}")
     public String DetalleUsuario(@PathVariable("idUsuario") int idUsuario, Model model) {
@@ -818,18 +467,7 @@ public class UsuarioController {
         }
     }
 
-//    @PostMapping("/detalle")
-//    public String UpdateUsuario(@ModelAttribute("usuario") Usuario usuario, RedirectAttributes redirectAttributes) {
-//        Result result = usuarioDAOImplementation.Update(usuario);
-//
-//        if (result.correct) {
-//            redirectAttributes.addFlashAttribute("successMessage", "El usuario " + usuario.getUserName() + " se actualizó con éxito");
-//        } else {
-//            redirectAttributes.addFlashAttribute("errorMessage", "Error al actualizar el usuario: " + result.errorMessage);
-//        }
-//
-//        return "redirect:/usuario/detalle/" + usuario.getIdUsuario();
-//    }
+
     @PostMapping("/detalle")
     public String UpdateUsuario(@ModelAttribute("usuario") Usuario usuario, RedirectAttributes redirectAttributes) {
         Result result = usuarioJPADAOImplementation.Update(usuario);
@@ -937,123 +575,3 @@ public class UsuarioController {
     
     
 
-//    @PostMapping("/direccion/update")
-//    public String UpdateDireccion(
-//            @RequestParam("idDireccion") int idDireccion,
-//            @RequestParam("idUsuario") int idUsuario,
-//            @RequestParam("calle") String calle,
-//            @RequestParam("numeroExterior") String numeroExterior,
-//            @RequestParam(value = "numeroInterior", required = false) String numeroInterior,
-//            @RequestParam("colonia.idColonia") int idColonia,
-//            RedirectAttributes redirectAttributes) {
-//
-//        try {
-//
-//            Direccion direccion = new Direccion();
-//            direccion.setIdDireccion(idDireccion);
-//            direccion.setCalle(calle);
-//            direccion.setNumeroExterior(numeroExterior);
-//            direccion.setNumeroInterior(numeroInterior != null && !numeroInterior.trim().isEmpty() ? numeroInterior : null);
-//
-//            Colonia colonia = new Colonia();
-//            colonia.setIdColonia(idColonia);
-//            direccion.setColonia(colonia);
-//
-//            Result result = direccionDAOImplementation.UpdateDireccion(direccion, idUsuario);
-//
-//            if (result.correct) {
-//                redirectAttributes.addFlashAttribute("successMessage",
-//                        "La dirección se actualizó con éxito");
-//            } else {
-//                redirectAttributes.addFlashAttribute("errorMessage",
-//                        "Error al actualizar la dirección: " + result.errorMessage);
-//            }
-//        } catch (Exception ex) {
-//            redirectAttributes.addFlashAttribute("errorMessage",
-//                    "Error inesperado al actualizar la dirección: " + ex.getMessage());
-//        }
-//
-//        return "redirect:/usuario/detalle/" + idUsuario;
-//    }
-//
-//    @PostMapping("/direccion/add")
-//    public String AddDireccion(
-//            @RequestParam("idUsuario") int idUsuario,
-//            @RequestParam("calle") String calle,
-//            @RequestParam("numeroExterior") String numeroExterior,
-//            @RequestParam(value = "numeroInterior", required = false) String numeroInterior,
-//            @RequestParam("colonia.idColonia") int idColonia,
-//            RedirectAttributes redirectAttributes) {
-//
-//        try {
-//            Direccion direccion = new Direccion();
-//            direccion.setCalle(calle);
-//            direccion.setNumeroExterior(numeroExterior);
-//            direccion.setNumeroInterior(numeroInterior);
-//
-//            Colonia colonia = new Colonia();
-//            colonia.setIdColonia(idColonia);
-//            direccion.setColonia(colonia);
-//
-//            Result result = direccionDAOImplementation.AddDireccion(direccion, idUsuario);
-//
-//            if (result.correct) {
-//                redirectAttributes.addFlashAttribute("successMessage",
-//                        "La dirección se agregó con éxito");
-//            } else {
-//                redirectAttributes.addFlashAttribute("errorMessage",
-//                        "Error: " + result.errorMessage);
-//            }
-//        } catch (Exception ex) {
-//            redirectAttributes.addFlashAttribute("errorMessage",
-//                    "Error: " + ex.getMessage());
-//        }
-//
-//        return "redirect:/usuario/detalle/" + idUsuario;
-//    }
-//
-//    @PostMapping("/direccion/delete")
-//    @ResponseBody
-//    public Result DeleteDireccion(
-//            @RequestParam("idDireccion") int idDireccion) {
-//
-//        try {
-//            Result result = direccionDAOImplementation.DeleteDireccion(idDireccion);
-//
-//            if (result.correct) {
-//                result.errorMessage = "La dirección se eliminó correctamente";
-//            } else {
-//                result.errorMessage = "No se pudo eliminar la dirección";
-//            }
-//
-//            return result;
-//
-//        } catch (Exception ex) {
-//            Result result = new Result();
-//            result.correct = false;
-//            result.errorMessage = "Error al eliminar dirección: " + ex.getMessage();
-//            result.ex = ex;
-//            return result;
-//        }
-//    }
-//
-//}
-
-//    @PostMapping("/add")
-//    public String Add(@ModelAttribute Usuario usuario) {
-//
-//        usuario.setDirecciones(new ArrayList<>());
-//
-//        Result result = usuarioDAOImplementation.Add(usuario);
-//        return "UsuarioIndex";
-//    }
-//    @GetMapping
-//    public String UsuarioIndex() {
-//        return "UsuarioIndex";
-//    }
-//    
-//    
-//    @GetMapping("formulario")
-//    public String UsuarioForm() {
-//        return "UsuarioForm";
-//    

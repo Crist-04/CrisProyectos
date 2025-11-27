@@ -17,10 +17,10 @@ public class MunicipioJPA {
     @Id
     @GeneratedValue (strategy = GenerationType.IDENTITY)
     @Column (name = "idmunicipio")
-    private int IdMunicipio;
+    public int IdMunicipio;
     
     @Column(name = "nombre")
-    private String Nombre;
+    public String Nombre;
     
     @ManyToOne
     @JoinColumn (name = "idestado")

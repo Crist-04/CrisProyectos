@@ -14,22 +14,27 @@ import java.util.stream.Collectors;
 
 @Repository
 public class ColoniaJPADAOImplementation {
-
+    
     @PersistenceContext
     private EntityManager entityManager;
     
     @Autowired
     private ModelMapper modelMapper;
-
+    
     public Result GetByIdMunicipio(int idMunicipio) {
         Result result = new Result();
         
         try {
-            String jpql = "SELECT c FROM ColoniaJPA c WHERE c.municipioJPA.idMunicipio = :idMunicipio";
+            System.out.println("=== Buscando colonias para municipio: " + idMunicipio + " ===");
+            
+            // Como tus campos son públicos, Hibernate usa el nombre del campo directamente
+            String jpql = "SELECT c FROM ColoniaJPA c WHERE c.MunicipioJPA.IdMunicipio = :idMunicipio";
             TypedQuery<ColoniaJPA> query = entityManager.createQuery(jpql, ColoniaJPA.class);
             query.setParameter("idMunicipio", idMunicipio);
             
             List<ColoniaJPA> coloniasJPA = query.getResultList();
+            
+            System.out.println("✅ Colonias encontradas: " + coloniasJPA.size());
             
             result.objects = coloniasJPA.stream()
                     .map(coloniaJPA -> modelMapper.map(coloniaJPA, Colonia.class))
@@ -38,6 +43,9 @@ public class ColoniaJPADAOImplementation {
             result.correct = true;
             
         } catch (Exception ex) {
+            System.err.println("❌ Error en GetByIdMunicipio: " + ex.getMessage());
+            ex.printStackTrace();
+            
             result.correct = false;
             result.errorMessage = ex.getMessage();
             result.ex = ex;
@@ -51,17 +59,24 @@ public class ColoniaJPADAOImplementation {
         Result result = new Result();
         
         try {
+            System.out.println("=== Buscando colonia con ID: " + idColonia + " ===");
+            
             ColoniaJPA coloniaJPA = entityManager.find(ColoniaJPA.class, idColonia);
             
             if (coloniaJPA != null) {
                 result.object = modelMapper.map(coloniaJPA, Colonia.class);
                 result.correct = true;
+                System.out.println("✅ Colonia encontrada: " + coloniaJPA.Nombre);
             } else {
                 result.correct = false;
                 result.errorMessage = "Colonia no encontrada";
+                System.out.println("❌ Colonia no encontrada");
             }
             
         } catch (Exception ex) {
+            System.err.println("❌ Error en GetByIdColonia: " + ex.getMessage());
+            ex.printStackTrace();
+            
             result.correct = false;
             result.errorMessage = ex.getMessage();
             result.ex = ex;
