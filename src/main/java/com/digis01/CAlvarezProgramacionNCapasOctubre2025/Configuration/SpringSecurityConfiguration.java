@@ -12,30 +12,37 @@ import org.springframework.security.web.SecurityFilterChain;
 @Configuration
 @EnableWebSecurity
 public class SpringSecurityConfiguration {
-    
+
     private final UserDetailsJPAService userDetailsJPAService;
-    
-    public SpringSecurityConfiguration(UserDetailsJPAService userDetailsJPAService1){
+
+    public SpringSecurityConfiguration(UserDetailsJPAService userDetailsJPAService1) {
         this.userDetailsJPAService = userDetailsJPAService1;
     }
-    
+
     @Bean
-    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception{
-        http.authorizeHttpRequests(configurer -> configurer 
+    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+        http.authorizeHttpRequests(configurer -> configurer
+                .requestMatchers("/login").permitAll()
                 .requestMatchers("/usuario/**")
                 .hasAnyRole("Administrador", "Usuario", "Cliente", "Rol5")
                 .anyRequest().authenticated())
                 .formLogin(form -> form
-                        .defaultSuccessUrl("/usuario", true)
+                .loginPage("/login")
+                .defaultSuccessUrl("/usuario", true)
+                .permitAll()
                 )
-                .userDetailsService(userDetailsJPAService); 
-        
+                .logout(logout -> logout
+                .logoutSuccessUrl("/login?logout")
+                .permitAll()
+                )
+                .userDetailsService(userDetailsJPAService);
+
         return http.build();
     }
-    
+
     @Bean
-    public PasswordEncoder passwordEncoder(){
+    public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
     }
-    
+
 }

@@ -6,6 +6,8 @@
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <title>Detalle de Usuario</title>
+        <meta name="_csrf" th:content="${_csrf.token}"/>
+    <meta name="_csrf_header" th:content="${_csrf.headerName}"/>
 
     <th:block layout:fragment="extra-css">
         <style>
@@ -737,7 +739,6 @@ function prepararModalAgregar(idUsuario) {
     console.log('📝 Preparando modal para agregar dirección');
     
     $("#modalAgregarDireccionLabel").html('<i class="bi bi-plus-circle"></i> Agregar Nueva Dirección');
-    $("#btnTextoGuardar").text('Guardar Dirección');
     
     // Remover campo oculto de edición si existe
     if ($("#idDireccionModal").length) {
@@ -781,7 +782,6 @@ function editarDireccion(btn) {
     console.log('Datos a editar:', {idDireccion, calle, numExt, idEstado, idMunicipio, idColonia});
     
     $("#modalAgregarDireccionLabel").html('<i class="bi bi-pencil-square"></i> Editar Dirección');
-    $("#btnTextoGuardar").text('Actualizar Dirección');
     
     // Crear campo oculto para el ID de dirección
     if (!$("#idDireccionModal").length) {
@@ -988,6 +988,15 @@ function guardarNuevaDireccionModal() {
     const idColonia = $("#modalColonia").val();
     const idUsuario = $("#idUsuarioModal").val();
     
+    console.log('📋 Datos a enviar:', {
+        idDireccion, 
+        calle, 
+        numeroExterior, 
+        numeroInterior, 
+        idColonia, 
+        idUsuario
+    });
+    
     // Validaciones
     if (!calle || !numeroExterior || !idColonia || idColonia == "0") {
         Swal.fire({
@@ -998,18 +1007,27 @@ function guardarNuevaDireccionModal() {
         return;
     }
     
-    console.log('💾 Guardando dirección:', {idDireccion, calle, numeroExterior, idColonia, idUsuario});
+    // ⭐ OBTENER TOKEN CSRF
+    const token = $("meta[name='_csrf']").attr("content");
+    const header = $("meta[name='_csrf_header']").attr("content");
     
     // Preparar datos
-    const formData = new FormData();
-    if (idDireccion) formData.append('idDireccion', idDireccion);
-    formData.append('idUsuario', idUsuario);
-    formData.append('calle', calle);
-    formData.append('numeroExterior', numeroExterior);
-    formData.append('numeroInterior', numeroInterior);
-    formData.append('colonia.idColonia', idColonia);
+    const datos = {
+        idUsuario: idUsuario,
+        calle: calle,
+        numeroExterior: numeroExterior,
+        numeroInterior: numeroInterior || '',
+        'colonia.idColonia': idColonia
+    };
     
-    // Determinar URL y método
+    // Si es edición, agregar idDireccion
+    if (idDireccion) {
+        datos.idDireccion = idDireccion;
+    }
+    
+    console.log('📤 Enviando datos:', datos);
+    
+    // Determinar URL
     const url = idDireccion ? '/usuario/direccion/update' : '/usuario/direccion/add';
     
     // Cerrar modal
@@ -1028,22 +1046,37 @@ function guardarNuevaDireccionModal() {
     $.ajax({
         type: 'POST',
         url: url,
-        data: formData,
-        processData: false,
-        contentType: false,
+        data: datos,
+        dataType: 'json',
+        // ⭐ AGREGAR HEADERS CON TOKEN CSRF
+        beforeSend: function(xhr) {
+            xhr.setRequestHeader(header, token);
+        },
         success: function(response) {
-            Swal.fire({
-                title: '¡Éxito!',
-                text: idDireccion ? 'Dirección actualizada correctamente' : 'Dirección agregada correctamente',
-                icon: 'success',
-                timer: 1500,
-                showConfirmButton: false
-            }).then(() => {
-                location.reload();
-            });
+            console.log('✅ Respuesta del servidor:', response);
+            
+            if (response.correct === true || response.correct === 'true') {
+                Swal.fire({
+                    title: '¡Éxito!',
+                    text: response.errorMessage || (idDireccion ? 'Dirección actualizada correctamente' : 'Dirección agregada correctamente'),
+                    icon: 'success',
+                    timer: 1500,
+                    showConfirmButton: false
+                }).then(() => {
+                    location.reload();
+                });
+            } else {
+                Swal.fire({
+                    title: 'Error',
+                    text: response.errorMessage || 'No se pudo guardar la dirección',
+                    icon: 'error'
+                });
+            }
         },
         error: function(xhr, status, error) {
-            console.error('❌ Error guardando dirección:', error);
+            console.error('❌ Error AJAX:', {xhr, status, error});
+            console.error('❌ Respuesta del servidor:', xhr.responseText);
+            
             Swal.fire({
                 title: 'Error',
                 text: 'No se pudo guardar la dirección: ' + error,
@@ -1052,143 +1085,6 @@ function guardarNuevaDireccionModal() {
         }
     });
 }
-
-function eliminarDireccion(idDireccion, idUsuario) {
-    Swal.fire({
-        title: '¿Estás seguro?',
-        text: "Esta dirección se eliminará permanentemente",
-        icon: 'warning',
-        showCancelButton: true,
-        confirmButtonColor: '#d33',
-        cancelButtonColor: '#3085d6',
-        confirmButtonText: 'Sí, eliminar',
-        cancelButtonText: 'Cancelar'
-    }).then((result) => {
-        if (result.isConfirmed) {
-            Swal.fire({
-                title: 'Eliminando...',
-                text: 'Por favor espera',
-                allowOutsideClick: false,
-                didOpen: () => Swal.showLoading()
-            });
-            
-            $.ajax({
-                type: 'POST',
-                url: '/usuario/direccion/delete',
-                data: { idDireccion: idDireccion },
-                success: function(response) {
-                    if (response.correct) {
-                        Swal.fire({
-                            title: '¡Eliminada!',
-                            text: 'La dirección ha sido eliminada',
-                            icon: 'success',
-                            timer: 1500,
-                            showConfirmButton: false
-                        }).then(() => {
-                            location.reload();
-                        });
-                    } else {
-                        Swal.fire('Error', response.errorMessage || 'No se pudo eliminar', 'error');
-                    }
-                },
-                error: function(xhr, status, error) {
-                    console.error('❌ Error eliminando dirección:', error);
-                    Swal.fire('Error', 'No se pudo eliminar la dirección', 'error');
-                }
-            });
-        }
-    });
-}
-
-// ===== FUNCIONES PARA EDICIÓN DE USUARIO =====
-
-let isEditMode = false;
-
-function toggleInfo() {
-    const infoSection = document.getElementById('infoSection');
-    const toggleText = document.getElementById('toggleText');
-    const toggleIcon = document.getElementById('toggleIcon');
-    
-    if (infoSection.classList.contains('show')) {
-        infoSection.classList.remove('show');
-        toggleText.textContent = 'Mostrar Información Completa';
-        toggleIcon.className = 'bi bi-eye';
-    } else {
-        infoSection.classList.add('show');
-        toggleText.textContent = 'Ocultar Información';
-        toggleIcon.className = 'bi bi-eye-slash';
-    }
-}
-
-function toggleEdit() {
-    isEditMode = !isEditMode;
-    const editBtn = document.getElementById('editBtn');
-    const editBtnText = document.getElementById('editBtnText');
-    const saveBtn = document.getElementById('saveBtn');
-    const editModeIndicator = document.getElementById('editModeIndicator');
-    const inputs = document.querySelectorAll('#infoSection input, #infoSection select');
-    
-    if (isEditMode) {
-        inputs.forEach(input => input.disabled = false);
-        editBtn.className = 'btn btn-secondary-custom btn-custom';
-        editBtnText.innerHTML = 'Cancelar';
-        saveBtn.style.display = 'inline-block';
-        editModeIndicator.classList.add('active');
-        
-        if (!document.getElementById('infoSection').classList.contains('show')) {
-            toggleInfo();
-        }
-    } else {
-        inputs.forEach(input => input.disabled = true);
-        editBtn.className = 'btn btn-warning-custom btn-custom';
-        editBtnText.innerHTML = '<i class="bi bi-pencil-square"></i> Editar Usuario';
-        saveBtn.style.display = 'none';
-        editModeIndicator.classList.remove('active');
-        location.reload();
-    }
-}
-
-// Actualizar nombre en tiempo real
-document.addEventListener('DOMContentLoaded', function() {
-    const nombreInput = document.getElementById('nombre');
-    const apellidoPaternoInput = document.getElementById('apellidoPaterno');
-    const apellidoMaternoInput = document.getElementById('apellidoMaterno');
-    const displayName = document.getElementById('displayName');
-    
-    function updateDisplayName() {
-        if (isEditMode) {
-            const nombre = nombreInput.value || '';
-            const paterno = apellidoPaternoInput.value || '';
-            const materno = apellidoMaternoInput.value || '';
-            displayName.textContent = `${nombre} ${paterno} ${materno}`.trim();
-        }
-    }
-    
-    if (nombreInput && apellidoPaternoInput && apellidoMaternoInput) {
-        nombreInput.addEventListener('input', updateDisplayName);
-        apellidoPaternoInput.addEventListener('input', updateDisplayName);
-        apellidoMaternoInput.addEventListener('input', updateDisplayName);
-    }
-});
-</script>
-
-    <!-- Alertas -->
-    <script th:if="${successMessage}" th:inline="javascript">
-        Swal.fire({
-            title: "¡Éxito!",
-            text: [[${successMessage}]],
-            icon: "success",
-            draggable: true
-        });
-    </script>
-
-    <script th:if="${errorMessage}" th:inline="javascript">
-        Swal.fire({
-            title: "Error",
-            text: [[${errorMessage}]],
-            icon: "error",
-            draggable: true
-        });
     </script>
 </th:block>
 </body>

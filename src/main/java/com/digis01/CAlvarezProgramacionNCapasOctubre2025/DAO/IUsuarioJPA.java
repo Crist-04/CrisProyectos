@@ -14,4 +14,6 @@ public interface IUsuarioJPA {
     
     Result Update (Usuario usuario);
     
+//    Result GetAllDinamico(String nombre, String aPaterno, String aMaterno, int idRol);
+    
 }

@@ -47,6 +47,8 @@ public class Usuario {
     @Size(min = 8, message = "La contraseña debe tener al menos 8 caracteres")
     @Pattern(regexp = "^(?=.*[A-Z])(?=.*[0-9])(?=.*[!@#$%^&*()_+\\-=\\[\\]{};':\"\\\\|,.<>\\/?]).*$", message = "Debe tener al menos una mayúscula, 1 número, 1 carácter especial")
     private String Password;
+    
+    private Integer Estatus;
 
     @NotNull(message = "el celular no debe ser nulo")
     @NotBlank(message = "el celular no debe estar vacio")
@@ -207,4 +209,14 @@ public class Usuario {
         this.Imagen = Imagen;
     }
 
+    public Integer getEstatus() {
+        return Estatus;
+    }
+
+    public void setEstatus(Integer Estatus) {
+        this.Estatus = Estatus;
+    }
+
+    
+    
 }

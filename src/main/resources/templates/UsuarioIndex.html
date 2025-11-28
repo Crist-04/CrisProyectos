@@ -5,6 +5,8 @@
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <title>UsuariosIndex</title>
+         <meta name="_csrf" th:content="${_csrf.token}"/>
+    <meta name="_csrf_header" th:content="${_csrf.headerName}"/>
     <th:block layout:fragment="extra-css">
         <style>
             body {
@@ -129,6 +131,66 @@
                 font-size: 0.75rem;
                 font-weight: 500;
             }
+
+            /* ← NUEVOS ESTILOS PARA EL TOGGLE SWITCH */
+            .toggle-switch {
+                position: relative;
+                display: inline-block;
+                width: 50px;
+                height: 24px;
+            }
+
+            .toggle-switch input {
+                opacity: 0;
+                width: 0;
+                height: 0;
+            }
+
+            .slider {
+                position: absolute;
+                cursor: pointer;
+                top: 0;
+                left: 0;
+                right: 0;
+                bottom: 0;
+                background-color: #dc3545;
+                transition: .4s;
+                border-radius: 24px;
+            }
+
+            .slider:before {
+                position: absolute;
+                content: "";
+                height: 18px;
+                width: 18px;
+                left: 3px;
+                bottom: 3px;
+                background-color: white;
+                transition: .4s;
+                border-radius: 50%;
+            }
+
+            input:checked + .slider {
+                background-color: #28a745;
+            }
+
+            input:checked + .slider:before {
+                transform: translateX(26px);
+            }
+
+            .status-label {
+                font-size: 0.75rem;
+                font-weight: 600;
+                margin-top: 3px;
+            }
+
+            .status-label.activo {
+                color: #28a745;
+            }
+
+            .status-label.inactivo {
+                color: #dc3545;
+            }
         </style>
     </th:block>
 </head>
@@ -190,7 +252,8 @@
                         <th>Acciones</th>
                         <th>Usuario</th>
                         <th>Datos de contacto</th>
-                        <th>Direcciones</th>                       
+                        <th>Direcciones</th>
+                        <th>Estatus</th> <!-- ← NUEVA COLUMNA -->
                     </tr>
                 </thead>
                 <tbody>
@@ -226,7 +289,6 @@
                             <div><i class="bi bi-phone me-1 text-info"></i><span th:text="${usuario.celular}">-</span></div>
                         </td>
                         <td class="text-start">
-                            <!-- Verificar si hay direcciones -->
                             <div th:if="${usuario.direcciones != null && !usuario.direcciones.isEmpty()}">
                                 <div th:each="direccion, iterStat : ${usuario.direcciones}" class="direccion-item">
                                     <span class="badge-direccion" th:text="'Dir. ' + ${iterStat.count}">Dir. 1</span>
@@ -238,7 +300,6 @@
                                                   th:text="' Int. ' + ${direccion.numeroInterior}"></span>
                                         </small>
                                     </div>
-                                    <!-- Mostrar colonia y código postal -->
                                     <div th:if="${direccion.colonia != null}">
                                         <small class="text-muted">
                                             <i class="bi bi-house-door me-1"></i>
@@ -247,7 +308,6 @@
                                                   th:text="', CP: ' + ${direccion.colonia.codigoPostal}"></span>
                                         </small>
                                     </div>
-                                    <!-- Mostrar municipio, estado y país -->
                                     <div th:if="${direccion.colonia != null && direccion.colonia.municipio != null}">
                                         <small class="text-muted">
                                             <i class="bi bi-map me-1"></i>
@@ -260,12 +320,29 @@
                                     </div>
                                 </div>
                             </div>
-                            <!-- Mensaje si no hay direcciones -->
                             <div th:if="${usuario.direcciones == null || usuario.direcciones.isEmpty()}" class="text-muted">
                                 <i class="bi bi-x-circle me-1"></i>
                                 <small>Sin direcciones registradas</small>
                             </div>
-                        </td>                        
+                        </td>
+
+                        <!-- ← NUEVA COLUMNA DE ESTATUS CON TOGGLE -->
+                        <td>
+                            <div class="d-flex flex-column align-items-center">
+                                <label class="toggle-switch">
+                                    <input type="checkbox" 
+                                           th:checked="${usuario.estatus == 1}"
+                                           th:data-usuario-id="${usuario.idUsuario}"
+                                           onchange="cambiarEstatus(this)">
+                                    <span class="slider"></span>
+                                </label>
+                                <small class="status-label" 
+                                       th:classappend="${usuario.estatus == 1} ? 'activo' : 'inactivo'"
+                                       th:text="${usuario.estatus == 1} ? 'Activo' : 'Inactivo'">
+                                    Activo
+                                </small>
+                            </div>
+                        </td>
                     </tr> 
                 </tbody>
             </table>
@@ -279,6 +356,76 @@
             icon: "success",
             draggable: true
         });
+    </script>
+
+    <!-- ← SCRIPT PARA CAMBIAR EL ESTATUS -->
+    <script>
+        function cambiarEstatus(checkbox) {
+            const usuarioId = checkbox.getAttribute('data-usuario-id');
+            const nuevoEstatus = checkbox.checked ? 1 : 0;
+            const statusLabel = checkbox.closest('td').querySelector('.status-label');
+
+            // Confirmación con SweetAlert2
+            Swal.fire({
+                title: '¿Estás seguro?',
+                text: nuevoEstatus === 1 ?
+                        '¿Deseas activar este usuario?' :
+                        '¿Deseas desactivar este usuario? No podrá iniciar sesión.',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#3085d6',
+                cancelButtonColor: '#d33',
+                confirmButtonText: 'Sí, cambiar',
+                cancelButtonText: 'Cancelar'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    // Realizar petición AJAX para cambiar el estatus
+                    fetch(`/usuario/cambiarEstatus/${usuarioId}/${nuevoEstatus}`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        }
+                    })
+                            .then(response => {
+                                if (response.ok) {
+                                    // Actualizar el texto del label
+                                    if (nuevoEstatus === 1) {
+                                        statusLabel.textContent = 'Activo';
+                                        statusLabel.classList.remove('inactivo');
+                                        statusLabel.classList.add('activo');
+                                    } else {
+                                        statusLabel.textContent = 'Inactivo';
+                                        statusLabel.classList.remove('activo');
+                                        statusLabel.classList.add('inactivo');
+                                    }
+
+                                    Swal.fire({
+                                        title: '¡Actualizado!',
+                                        text: 'El estatus del usuario ha sido cambiado.',
+                                        icon: 'success',
+                                        timer: 2000,
+                                        showConfirmButton: false
+                                    });
+                                } else {
+                                    throw new Error('Error al cambiar el estatus');
+                                }
+                            })
+                            .catch(error => {
+                                // Revertir el checkbox si hay error
+                                checkbox.checked = !checkbox.checked;
+
+                                Swal.fire({
+                                    title: 'Error',
+                                    text: 'No se pudo cambiar el estatus del usuario.',
+                                    icon: 'error'
+                                });
+                            });
+                } else {
+                    // Revertir el checkbox si cancela
+                    checkbox.checked = !checkbox.checked;
+                }
+            });
+        }
     </script>
 </th:block>
 

@@ -7,6 +7,7 @@ import com.digis01.CAlvarezProgramacionNCapasOctubre2025.DAO.DireccionDAOImpleme
 import com.digis01.CAlvarezProgramacionNCapasOctubre2025.DAO.DireccionJPADAOImplementation;
 import com.digis01.CAlvarezProgramacionNCapasOctubre2025.DAO.EstadoDAOImplementation;
 import com.digis01.CAlvarezProgramacionNCapasOctubre2025.DAO.EstadoDAOJPAImplementation;
+import com.digis01.CAlvarezProgramacionNCapasOctubre2025.DAO.IUsuarioRepositoryDAO;
 import com.digis01.CAlvarezProgramacionNCapasOctubre2025.DAO.MunicipioDAOImplementation;
 import com.digis01.CAlvarezProgramacionNCapasOctubre2025.DAO.MunicipioDAOJPAImplementation;
 import com.digis01.CAlvarezProgramacionNCapasOctubre2025.DAO.RolDAOImplementation;
@@ -42,6 +43,8 @@ import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.xssf.usermodel.XSSFSheet;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Controller;
 import org.springframework.transaction.annotation.Transactional;
@@ -95,12 +98,10 @@ public class UsuarioController {
     @Autowired
     private DireccionJPADAOImplementation direccionJPADAOImplementation;
 
-//    @GetMapping
-//    public String UsuarioIndex(Model model) {
-//        Result result = usuarioDAOImplementation.GetAll();
-//        model.addAttribute("usuarios", result.objects);
-//        return "UsuarioIndex";
-//    }
+    @Autowired
+    private IUsuarioRepositoryDAO iUsuarioRepositoryDAO;
+
+
     @GetMapping
     public String UsuarioIndex(Model model) {
 
@@ -117,6 +118,25 @@ public class UsuarioController {
         return "UsuarioIndex";
     }
 
+    @PostMapping
+    public String UsuarioIndex(@ModelAttribute("usuarioBusqueda") Usuario usuarioBusqueda, Model model) {
+
+        String nombre = usuarioBusqueda.getNombre() != null ? usuarioBusqueda.getNombre() : "";
+        String aPaterno = usuarioBusqueda.getApellidoPaterno() != null ? usuarioBusqueda.getApellidoPaterno() : "";
+        String aMaterno = usuarioBusqueda.getApellidoMaterno() != null ? usuarioBusqueda.getApellidoMaterno() : "";
+        int idRol = usuarioBusqueda.getRol() != null ? usuarioBusqueda.getRol().getIdRol() : 0;
+
+        Result result = usuarioDAOImplementation.GetAllDinamico(nombre, aPaterno, aMaterno, idRol);
+
+        Result rolesResult = rolDAOImplementation.GetAll();
+
+        model.addAttribute("usuarios", result.objects);
+        model.addAttribute("roles", rolesResult.objects);
+        model.addAttribute("usuarioBusqueda", usuarioBusqueda);
+
+        return "UsuarioIndex";
+    }
+    
     @GetMapping("formulario")
     public String UsuarioForm() {
         return "UsuarioForm";
@@ -135,7 +155,6 @@ public class UsuarioController {
         // Inserción con carga masiva
         return "CargaMasiva";
     }
-
 
     @PostMapping("/cargaMasiva")
     public String CargaMasiva(@RequestParam("archivo") MultipartFile archivo, Model model, HttpSession session) throws IOException {
@@ -266,166 +285,161 @@ public class UsuarioController {
         return usuarios;
     }
 
-
     //El de aqui es el Add de JPA
     // ============================================
 // AGREGAR ESTE MÉTODO GET ANTES DEL @PostMapping("/add")
 // ============================================
+    @GetMapping("/add")
+    public String ShowAddForm(Model model) {
+        System.out.println("=== Mostrando formulario de agregar usuario ===");
 
-@GetMapping("/add")
-public String ShowAddForm(Model model) {
-    System.out.println("=== Mostrando formulario de agregar usuario ===");
-    
-    // Crear un nuevo usuario vacío
-    Usuario usuario = new Usuario();
-    
-    // Inicializar la lista de direcciones con una dirección vacía
-    Direccion direccion = new Direccion();
-    direccion.setColonia(new Colonia());
-    
-    List<Direccion> direcciones = new ArrayList<>();
-    direcciones.add(direccion);
-    usuario.setDireccion(direccion);
-    
-    // Cargar roles
-    Result resultRoles = rolJPADAOImplementation.GetAll();
-    
-    // Agregar al modelo
-    model.addAttribute("Usuario", usuario);
-    model.addAttribute("roles", resultRoles.objects);
-    
-    return "UsuarioForm";
-}
+        // Crear un nuevo usuario vacío
+        Usuario usuario = new Usuario();
+
+        // Inicializar la lista de direcciones con una dirección vacía
+        Direccion direccion = new Direccion();
+        direccion.setColonia(new Colonia());
+
+        List<Direccion> direcciones = new ArrayList<>();
+        direcciones.add(direccion);
+        usuario.setDireccion(direccion);
+
+        // Cargar roles
+        Result resultRoles = rolJPADAOImplementation.GetAll();
+
+        // Agregar al modelo
+        model.addAttribute("Usuario", usuario);
+        model.addAttribute("roles", resultRoles.objects);
+
+        return "UsuarioForm";
+    }
 
 // ============================================
 // TU @PostMapping("/add") EXISTENTE SE QUEDA IGUAL
 // ============================================
+    @PostMapping("/add")
+    public String Form(@Valid @ModelAttribute("Usuario") Usuario usuario,
+            BindingResult bindingResult,
+            Model model,
+            RedirectAttributes redirectAttributes,
+            @RequestParam(value = "foto", required = false) MultipartFile foto) {
 
-@PostMapping("/add")
-public String Form(@Valid @ModelAttribute("Usuario") Usuario usuario,
-        BindingResult bindingResult,
-        Model model,
-        RedirectAttributes redirectAttributes,
-        @RequestParam(value = "foto", required = false) MultipartFile foto) {
-    
-    if (bindingResult.hasErrors()) {
-        // Asegurar que direcciones no sea null
-        if (usuario.getDirecciones() == null) {
-            usuario.setDirecciones(new ArrayList<>());
-        }
-        
-        if (usuario.getDirecciones().isEmpty()) {
-            Direccion direccion = new Direccion();
-            direccion.setColonia(new Colonia());
-            usuario.getDirecciones().add(direccion);
-        } else {
-            if (usuario.getDirecciones().get(0) != null) {
-                if (usuario.getDirecciones().get(0).getColonia() == null) {
-                    usuario.getDirecciones().get(0).setColonia(new Colonia());
-                }
+        if (bindingResult.hasErrors()) {
+            // Asegurar que direcciones no sea null
+            if (usuario.getDirecciones() == null) {
+                usuario.setDirecciones(new ArrayList<>());
             }
-        }
-        
-        Result resultRoles = rolJPADAOImplementation.GetAll();
-        model.addAttribute("roles", resultRoles.objects);
-        model.addAttribute("Usuario", usuario);
-        
-        return "UsuarioForm";
-    }
-    
-    // Procesar imagen
-    if (foto != null && !foto.isEmpty()) {
-        try {
-            String nombreArchivo = foto.getOriginalFilename();
-            if (nombreArchivo != null && nombreArchivo.contains(".")) {
-                String extension = nombreArchivo.substring(nombreArchivo.lastIndexOf(".") + 1).toLowerCase();
-                
-                if (extension.equals("jpg") || extension.equals("png") || extension.equals("jpeg")) {
-                    byte[] byteImagen = foto.getBytes();
-                    String imagenBase64 = Base64.getEncoder().encodeToString(byteImagen);
-                    usuario.setImagen(imagenBase64);
-                } else {
-                    redirectAttributes.addFlashAttribute("errorMessage",
-                            "Formato de imagen no válido. Solo se permiten JPG, JPEG y PNG");
-                    
-                    usuario.setDirecciones(usuario.getDirecciones() != null ? usuario.getDirecciones() : new ArrayList<>());
-                    if (usuario.getDirecciones().isEmpty()) {
-                        Direccion direccion = new Direccion();
-                        direccion.setColonia(new Colonia());
-                        usuario.getDirecciones().add(direccion);
-                    }
-                    
-                    Result resultRoles = rolJPADAOImplementation.GetAll();
-                    model.addAttribute("roles", resultRoles.objects);
-                    model.addAttribute("Usuario", usuario);
-                    return "UsuarioForm";
-                }
-            }
-        } catch (IOException ex) {
-            Logger.getLogger(UsuarioController.class.getName()).log(Level.SEVERE, null, ex);
-            redirectAttributes.addFlashAttribute("errorMessage",
-                    "Error al procesar la imagen: " + ex.getMessage());
-            return "redirect:/usuario/add";
-        }
-    }
-    
-    // Guardar usuario
-    try {
-        Result result = usuarioJPADAOImplementation.Add(usuario);
-        
-        if (result.correct) {
-            redirectAttributes.addFlashAttribute("successMessage",
-                    "El usuario: " + usuario.getUserName() + " se creó con éxito");
-            return "redirect:/usuario";
-        } else {
-            redirectAttributes.addFlashAttribute("errorMessage",
-                    "Error al crear el usuario: " + result.errorMessage);
-            
-            usuario.setDirecciones(usuario.getDirecciones() != null ? usuario.getDirecciones() : new ArrayList<>());
+
             if (usuario.getDirecciones().isEmpty()) {
                 Direccion direccion = new Direccion();
                 direccion.setColonia(new Colonia());
                 usuario.getDirecciones().add(direccion);
+            } else {
+                if (usuario.getDirecciones().get(0) != null) {
+                    if (usuario.getDirecciones().get(0).getColonia() == null) {
+                        usuario.getDirecciones().get(0).setColonia(new Colonia());
+                    }
+                }
             }
-            
+
             Result resultRoles = rolJPADAOImplementation.GetAll();
             model.addAttribute("roles", resultRoles.objects);
             model.addAttribute("Usuario", usuario);
+
             return "UsuarioForm";
         }
-    } catch (Exception ex) {
-        redirectAttributes.addFlashAttribute("errorMessage",
-                "Error inesperado: " + ex.getMessage());
-        ex.printStackTrace();
-        return "redirect:/usuario/add";
+
+        // Procesar imagen
+        if (foto != null && !foto.isEmpty()) {
+            try {
+                String nombreArchivo = foto.getOriginalFilename();
+                if (nombreArchivo != null && nombreArchivo.contains(".")) {
+                    String extension = nombreArchivo.substring(nombreArchivo.lastIndexOf(".") + 1).toLowerCase();
+
+                    if (extension.equals("jpg") || extension.equals("png") || extension.equals("jpeg")) {
+                        byte[] byteImagen = foto.getBytes();
+                        String imagenBase64 = Base64.getEncoder().encodeToString(byteImagen);
+                        usuario.setImagen(imagenBase64);
+                    } else {
+                        redirectAttributes.addFlashAttribute("errorMessage",
+                                "Formato de imagen no válido. Solo se permiten JPG, JPEG y PNG");
+
+                        usuario.setDirecciones(usuario.getDirecciones() != null ? usuario.getDirecciones() : new ArrayList<>());
+                        if (usuario.getDirecciones().isEmpty()) {
+                            Direccion direccion = new Direccion();
+                            direccion.setColonia(new Colonia());
+                            usuario.getDirecciones().add(direccion);
+                        }
+
+                        Result resultRoles = rolJPADAOImplementation.GetAll();
+                        model.addAttribute("roles", resultRoles.objects);
+                        model.addAttribute("Usuario", usuario);
+                        return "UsuarioForm";
+                    }
+                }
+            } catch (IOException ex) {
+                Logger.getLogger(UsuarioController.class.getName()).log(Level.SEVERE, null, ex);
+                redirectAttributes.addFlashAttribute("errorMessage",
+                        "Error al procesar la imagen: " + ex.getMessage());
+                return "redirect:/usuario/add";
+            }
+        }
+
+        // Guardar usuario
+        try {
+            Result result = usuarioJPADAOImplementation.Add(usuario);
+
+            if (result.correct) {
+                redirectAttributes.addFlashAttribute("successMessage",
+                        "El usuario: " + usuario.getUserName() + " se creó con éxito");
+                return "redirect:/usuario";
+            } else {
+                redirectAttributes.addFlashAttribute("errorMessage",
+                        "Error al crear el usuario: " + result.errorMessage);
+
+                usuario.setDirecciones(usuario.getDirecciones() != null ? usuario.getDirecciones() : new ArrayList<>());
+                if (usuario.getDirecciones().isEmpty()) {
+                    Direccion direccion = new Direccion();
+                    direccion.setColonia(new Colonia());
+                    usuario.getDirecciones().add(direccion);
+                }
+
+                Result resultRoles = rolJPADAOImplementation.GetAll();
+                model.addAttribute("roles", resultRoles.objects);
+                model.addAttribute("Usuario", usuario);
+                return "UsuarioForm";
+            }
+        } catch (Exception ex) {
+            redirectAttributes.addFlashAttribute("errorMessage",
+                    "Error inesperado: " + ex.getMessage());
+            ex.printStackTrace();
+            return "redirect:/usuario/add";
+        }
     }
-}
 
-
-    
     @GetMapping("estado/{idPais}")
-@ResponseBody
-public Result GetEstadoByIdPais(@PathVariable("idPais") int idPais) {
-    return estadoJPADAOImplementation.GetByIdPais(idPais);
-}
+    @ResponseBody
+    public Result GetEstadoByIdPais(@PathVariable("idPais") int idPais) {
+        return estadoJPADAOImplementation.GetByIdPais(idPais);
+    }
 
-@GetMapping("municipio/{idEstado}")
-@ResponseBody
-public Result GetByIdEstado(@PathVariable("idEstado") int idEstado) {
-    return municipioJPADAOImplementation.GetByIdEstado(idEstado);
-}
+    @GetMapping("municipio/{idEstado}")
+    @ResponseBody
+    public Result GetByIdEstado(@PathVariable("idEstado") int idEstado) {
+        return municipioJPADAOImplementation.GetByIdEstado(idEstado);
+    }
 
-@GetMapping("colonia/{idMunicipio}")
-@ResponseBody
-public Result GetByIdMunicipio(@PathVariable("idMunicipio") int idMunicipio) {
-    return coloniaJPADAOImplementation.GetByIdMunicipio(idMunicipio);
-}
+    @GetMapping("colonia/{idMunicipio}")
+    @ResponseBody
+    public Result GetByIdMunicipio(@PathVariable("idMunicipio") int idMunicipio) {
+        return coloniaJPADAOImplementation.GetByIdMunicipio(idMunicipio);
+    }
 
-@GetMapping("codigopostal/{idColonia}")
-@ResponseBody
-public Result GetByIdColonia(@PathVariable("idColonia") int idColonia) {
-    return coloniaJPADAOImplementation.GetByIdColonia(idColonia);
-}
+    @GetMapping("codigopostal/{idColonia}")
+    @ResponseBody
+    public Result GetByIdColonia(@PathVariable("idColonia") int idColonia) {
+        return coloniaJPADAOImplementation.GetByIdColonia(idColonia);
+    }
 
     @GetMapping("/detalle/{idUsuario}")
     public String DetalleUsuario(@PathVariable("idUsuario") int idUsuario, Model model) {
@@ -467,7 +481,6 @@ public Result GetByIdColonia(@PathVariable("idColonia") int idColonia) {
         }
     }
 
-
     @PostMapping("/detalle")
     public String UpdateUsuario(@ModelAttribute("usuario") Usuario usuario, RedirectAttributes redirectAttributes) {
         Result result = usuarioJPADAOImplementation.Update(usuario);
@@ -480,74 +493,70 @@ public Result GetByIdColonia(@PathVariable("idColonia") int idColonia) {
 
         return "redirect:/usuario/detalle/" + usuario.getIdUsuario();
     }
-    
+
     @PostMapping("/direccion/update")
-    public String UpdateDireccion(
-            @RequestParam("idDireccion") int idDireccion,
-            @RequestParam("idUsuario") int idUsuario,
-            @RequestParam("calle") String calle,
-            @RequestParam("numeroExterior") String numeroExterior,
-            @RequestParam(value = "numeroInterior", required = false) String numeroInterior,
-            @RequestParam("colonia.idColonia") int idColonia,
-            RedirectAttributes redirectAttributes) {
+@ResponseBody  // ⭐ AGREGAR ESTA ANOTACIÓN
+public Result UpdateDireccion(
+        @RequestParam("idDireccion") int idDireccion,
+        @RequestParam("idUsuario") int idUsuario,
+        @RequestParam("calle") String calle,
+        @RequestParam("numeroExterior") String numeroExterior,
+        @RequestParam(value = "numeroInterior", required = false) String numeroInterior,
+        @RequestParam("colonia.idColonia") int idColonia) {
 
-        try {
-            Direccion direccion = new Direccion();
-            direccion.setIdDireccion(idDireccion);
-            direccion.setCalle(calle);
-            direccion.setNumeroExterior(numeroExterior);
-            direccion.setNumeroInterior(numeroInterior != null && !numeroInterior.trim().isEmpty() ? numeroInterior : null);
+    try {
+        Direccion direccion = new Direccion();
+        direccion.setIdDireccion(idDireccion);
+        direccion.setCalle(calle);
+        direccion.setNumeroExterior(numeroExterior);
+        direccion.setNumeroInterior(numeroInterior != null && !numeroInterior.trim().isEmpty() ? numeroInterior : null);
 
-            Colonia colonia = new Colonia();
-            colonia.setIdColonia(idColonia);
-            direccion.setColonia(colonia);
+        Colonia colonia = new Colonia();
+        colonia.setIdColonia(idColonia);
+        direccion.setColonia(colonia);
 
-            Result result = direccionJPADAOImplementation.UpdateDireccion(direccion, idUsuario);
-
-            if (result.correct) {
-                redirectAttributes.addFlashAttribute("successMessage", "La dirección se actualizó con éxito");
-            } else {
-                redirectAttributes.addFlashAttribute("errorMessage", "Error al actualizar la dirección: " + result.errorMessage);
-            }
-        } catch (Exception ex) {
-            redirectAttributes.addFlashAttribute("errorMessage", "Error inesperado al actualizar la dirección: " + ex.getMessage());
-        }
-
-        return "redirect:/usuario/detalle/" + idUsuario;
+        Result result = direccionJPADAOImplementation.UpdateDireccion(direccion, idUsuario);
+        return result;  // ⭐ RETORNAR DIRECTAMENTE EL RESULT
+        
+    } catch (Exception ex) {
+        Result result = new Result();
+        result.correct = false;
+        result.errorMessage = "Error inesperado: " + ex.getMessage();
+        result.ex = ex;
+        return result;
     }
+}
 
-    @PostMapping("/direccion/add")
-    public String AddDireccion(
-            @RequestParam("idUsuario") int idUsuario,
-            @RequestParam("calle") String calle,
-            @RequestParam("numeroExterior") String numeroExterior,
-            @RequestParam(value = "numeroInterior", required = false) String numeroInterior,
-            @RequestParam("colonia.idColonia") int idColonia,
-            RedirectAttributes redirectAttributes) {
+@PostMapping("/direccion/add")
+@ResponseBody  // ⭐ AGREGAR ESTA ANOTACIÓN
+public Result AddDireccion(
+        @RequestParam("idUsuario") int idUsuario,
+        @RequestParam("calle") String calle,
+        @RequestParam("numeroExterior") String numeroExterior,
+        @RequestParam(value = "numeroInterior", required = false) String numeroInterior,
+        @RequestParam("colonia.idColonia") int idColonia) {
 
-        try {
-            Direccion direccion = new Direccion();
-            direccion.setCalle(calle);
-            direccion.setNumeroExterior(numeroExterior);
-            direccion.setNumeroInterior(numeroInterior);
+    try {
+        Direccion direccion = new Direccion();
+        direccion.setCalle(calle);
+        direccion.setNumeroExterior(numeroExterior);
+        direccion.setNumeroInterior(numeroInterior);
 
-            Colonia colonia = new Colonia();
-            colonia.setIdColonia(idColonia);
-            direccion.setColonia(colonia);
+        Colonia colonia = new Colonia();
+        colonia.setIdColonia(idColonia);
+        direccion.setColonia(colonia);
 
-            Result result = direccionJPADAOImplementation.AddDireccion(direccion, idUsuario);
-
-            if (result.correct) {
-                redirectAttributes.addFlashAttribute("successMessage", "La dirección se agregó con éxito");
-            } else {
-                redirectAttributes.addFlashAttribute("errorMessage", "Error: " + result.errorMessage);
-            }
-        } catch (Exception ex) {
-            redirectAttributes.addFlashAttribute("errorMessage", "Error: " + ex.getMessage());
-        }
-
-        return "redirect:/usuario/detalle/" + idUsuario;
+        Result result = direccionJPADAOImplementation.AddDireccion(direccion, idUsuario);
+        return result;  // ⭐ RETORNAR DIRECTAMENTE EL RESULT
+        
+    } catch (Exception ex) {
+        Result result = new Result();
+        result.correct = false;
+        result.errorMessage = "Error: " + ex.getMessage();
+        result.ex = ex;
+        return result;
     }
+}
 
     @PostMapping("/direccion/delete")
     @ResponseBody
@@ -571,7 +580,20 @@ public Result GetByIdColonia(@PathVariable("idColonia") int idColonia) {
             return result;
         }
     }
-}
-    
-    
 
+    @PostMapping("/cambiarEstatus/{idUsuario}/{nuevoEstatus}")
+    @ResponseBody
+    public ResponseEntity<String> cambiarEstatus(
+            @PathVariable int idUsuario,
+            @PathVariable int nuevoEstatus) {
+
+        try {
+            iUsuarioRepositoryDAO.cambiarEstatus(idUsuario, nuevoEstatus);
+            return ResponseEntity.ok("Estatus actualizado correctamente");
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Error al actualizar el estatus: " + e.getMessage());
+        }
+    }
+
+}

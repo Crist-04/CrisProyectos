@@ -21,13 +21,16 @@ public class UserDetailsJPAService implements UserDetailsService {
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
         UsuarioJPA usuario = iUsuarioRepositoryDAO.findByUsername(username);
         
-        if (usuario == null) {
-            throw new UsernameNotFoundException("Usuario no encontrado: " + username);
+       
+        if (usuario.getEstatus()== 0) {
+            throw new UsernameNotFoundException("Usuario Inactivo" +username);
+            
         }
         
         return User.withUsername(usuario.getUsername())
                 .password(usuario.getPassword())
                 .roles(usuario.getRol().getNombre()) 
+                .disabled(usuario.getEstatus()==0)
                 .build();
     }
     

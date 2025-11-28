@@ -143,6 +143,7 @@ public class MapperConfig {
     usuario.setCelular(source.getCelular());
     usuario.setCURP(source.getCURP());
     usuario.setImagen(source.getImagen());
+    usuario.setEstatus(source.getEstatus());
     
     if (source.getRol() != null) {
         usuario.setRol(rolConverter.convert(context.create(source.getRol(), Rol.class)));
@@ -223,6 +224,7 @@ Converter<Usuario, UsuarioJPA> usuarioMLtoJPAConverter = context -> {
     usuarioJPA.setCelular(source.getCelular());
     usuarioJPA.setCURP(source.getCURP());
     usuarioJPA.setImagen(source.getImagen());
+     usuarioJPA.setEstatus(source.getEstatus());
     
     if (source.getRol() != null && source.getRol().getIdRol() > 0) {
         RolJPA rolJPA = new RolJPA();

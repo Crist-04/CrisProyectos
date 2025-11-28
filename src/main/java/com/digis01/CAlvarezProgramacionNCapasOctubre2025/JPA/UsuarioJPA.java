@@ -40,6 +40,9 @@ public class UsuarioJPA {
 
     @Column(name = "password")
     private String Password;
+    
+    @Column(name = "estatus")
+    private Integer Estatus;
 
     @Column(name = "fechanacimiento")
     private Date FechaNacimiento;
@@ -185,6 +188,14 @@ public void setDireccionesJPA(List<DireccionJPA> direccionesJPA) {
 
     public void setImagen(String Imagen) {
         this.Imagen = Imagen;
+    }
+
+    public Integer getEstatus() {
+        return Estatus;
+    }
+
+    public void setEstatus(Integer Estatus) {
+        this.Estatus = Estatus;
     }
 
 
