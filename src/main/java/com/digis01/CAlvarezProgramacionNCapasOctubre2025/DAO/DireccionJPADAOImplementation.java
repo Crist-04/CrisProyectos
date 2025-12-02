@@ -21,7 +21,6 @@ public class DireccionJPADAOImplementation {
         Result result = new Result();
         
         try {
-            // Buscar la dirección existente
             DireccionJPA direccionJPA = entityManager.find(DireccionJPA.class, direccion.getIdDireccion());
             
             if (direccionJPA == null) {
@@ -30,12 +29,10 @@ public class DireccionJPADAOImplementation {
                 return result;
             }
             
-            // Actualizar campos
             direccionJPA.setCalle(direccion.getCalle());
             direccionJPA.setNumeroInterior(direccion.getNumeroInterior());
             direccionJPA.setNumeroExterior(direccion.getNumeroExterior());
             
-            // Actualizar colonia
             if (direccion.getColonia() != null && direccion.getColonia().getIdColonia() > 0) {
                 ColoniaJPA coloniaJPA = entityManager.find(ColoniaJPA.class, direccion.getColonia().getIdColonia());
                 
@@ -48,7 +45,6 @@ public class DireccionJPADAOImplementation {
                 }
             }
             
-            // EntityManager hace el UPDATE automáticamente por estar en transacción
             entityManager.merge(direccionJPA);
             
             result.correct = true;
@@ -74,7 +70,6 @@ public class DireccionJPADAOImplementation {
             direccionJPA.setNumeroInterior(direccion.getNumeroInterior());
             direccionJPA.setNumeroExterior(direccion.getNumeroExterior());
             
-            // Asignar colonia
             if (direccion.getColonia() != null && direccion.getColonia().getIdColonia() > 0) {
                 ColoniaJPA coloniaJPA = entityManager.find(ColoniaJPA.class, direccion.getColonia().getIdColonia());
                 
@@ -87,7 +82,6 @@ public class DireccionJPADAOImplementation {
                 }
             }
             
-            // Asignar usuario
             UsuarioJPA usuarioJPA = entityManager.find(UsuarioJPA.class, idUsuario);
             if (usuarioJPA != null) {
                 direccionJPA.setUsuarioJPA(usuarioJPA);

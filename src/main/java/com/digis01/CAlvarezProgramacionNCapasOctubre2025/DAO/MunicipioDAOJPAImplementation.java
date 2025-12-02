@@ -25,16 +25,13 @@ public class MunicipioDAOJPAImplementation {
         Result result = new Result();
         
         try {
-            System.out.println("=== Buscando municipios para estado: " + idEstado + " ===");
             
-            // Como tus campos son públicos, Hibernate usa el nombre del campo directamente
             String jpql = "SELECT m FROM MunicipioJPA m WHERE m.EstadoJPA.IdEstado = :idEstado";
             TypedQuery<MunicipioJPA> query = entityManager.createQuery(jpql, MunicipioJPA.class);
             query.setParameter("idEstado", idEstado);
             
             List<MunicipioJPA> municipiosJPA = query.getResultList();
             
-            System.out.println("✅ Municipios encontrados: " + municipiosJPA.size());
             
             result.objects = municipiosJPA.stream()
                     .map(municipioJPA -> modelMapper.map(municipioJPA, Municipio.class))
@@ -43,7 +40,6 @@ public class MunicipioDAOJPAImplementation {
             result.correct = true;
             
         } catch (Exception ex) {
-            System.err.println("❌ Error en GetByIdEstado: " + ex.getMessage());
             ex.printStackTrace();
             
             result.correct = false;

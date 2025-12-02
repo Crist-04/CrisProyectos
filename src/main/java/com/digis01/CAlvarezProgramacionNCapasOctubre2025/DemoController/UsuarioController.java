@@ -285,18 +285,13 @@ public class UsuarioController {
         return usuarios;
     }
 
-    //El de aqui es el Add de JPA
-    // ============================================
-// AGREGAR ESTE MÉTODO GET ANTES DEL @PostMapping("/add")
-// ============================================
+
     @GetMapping("/add")
     public String ShowAddForm(Model model) {
         System.out.println("=== Mostrando formulario de agregar usuario ===");
 
-        // Crear un nuevo usuario vacío
         Usuario usuario = new Usuario();
 
-        // Inicializar la lista de direcciones con una dirección vacía
         Direccion direccion = new Direccion();
         direccion.setColonia(new Colonia());
 
@@ -304,19 +299,15 @@ public class UsuarioController {
         direcciones.add(direccion);
         usuario.setDireccion(direccion);
 
-        // Cargar roles
         Result resultRoles = rolJPADAOImplementation.GetAll();
 
-        // Agregar al modelo
         model.addAttribute("Usuario", usuario);
         model.addAttribute("roles", resultRoles.objects);
 
         return "UsuarioForm";
     }
 
-// ============================================
-// TU @PostMapping("/add") EXISTENTE SE QUEDA IGUAL
-// ============================================
+
     @PostMapping("/add")
     public String Form(@Valid @ModelAttribute("Usuario") Usuario usuario,
             BindingResult bindingResult,
@@ -325,7 +316,6 @@ public class UsuarioController {
             @RequestParam(value = "foto", required = false) MultipartFile foto) {
 
         if (bindingResult.hasErrors()) {
-            // Asegurar que direcciones no sea null
             if (usuario.getDirecciones() == null) {
                 usuario.setDirecciones(new ArrayList<>());
             }
@@ -349,7 +339,6 @@ public class UsuarioController {
             return "UsuarioForm";
         }
 
-        // Procesar imagen
         if (foto != null && !foto.isEmpty()) {
             try {
                 String nombreArchivo = foto.getOriginalFilename();
@@ -385,7 +374,6 @@ public class UsuarioController {
             }
         }
 
-        // Guardar usuario
         try {
             Result result = usuarioJPADAOImplementation.Add(usuario);
 
@@ -444,37 +432,27 @@ public class UsuarioController {
     @GetMapping("/detalle/{idUsuario}")
     public String DetalleUsuario(@PathVariable("idUsuario") int idUsuario, Model model) {
         try {
-            System.out.println("=== Entrando a DetalleUsuario con ID: " + idUsuario + " ===");
 
-            // Llamar al DAO de JPA para obtener el usuario
             Result result = usuarioJPADAOImplementation.GetById(idUsuario);
 
-            System.out.println("Result.correct: " + result.correct);
-            System.out.println("Result.errorMessage: " + result.errorMessage);
 
             if (result.correct && result.object != null) {
                 Usuario usuario = (Usuario) result.object;
 
-                System.out.println("Usuario encontrado: " + usuario.getNombre());
-                System.out.println("Direcciones: " + (usuario.getDirecciones() != null ? usuario.getDirecciones().size() : "null"));
 
                 model.addAttribute("usuario", usuario);
 
-                // Cargar roles para el dropdown
                 Result resultRoles = rolJPADAOImplementation.GetAll();
                 model.addAttribute("roles", resultRoles.objects);
 
-                System.out.println("=== Retornando vista UsuarioDetalle ===");
                 return "UsuarioDetail";
 
             } else {
-                System.out.println("=== Usuario no encontrado, redirigiendo ===");
                 model.addAttribute("errorMessage", "Usuario no encontrado: " + result.errorMessage);
                 return "redirect:/usuario";
             }
 
         } catch (Exception ex) {
-            System.out.println("=== ERROR en DetalleUsuario ===");
             ex.printStackTrace();
             model.addAttribute("errorMessage", "Error al cargar el detalle: " + ex.getMessage());
             return "redirect:/usuario";
@@ -495,7 +473,7 @@ public class UsuarioController {
     }
 
     @PostMapping("/direccion/update")
-@ResponseBody  // ⭐ AGREGAR ESTA ANOTACIÓN
+@ResponseBody  
 public Result UpdateDireccion(
         @RequestParam("idDireccion") int idDireccion,
         @RequestParam("idUsuario") int idUsuario,
@@ -516,7 +494,7 @@ public Result UpdateDireccion(
         direccion.setColonia(colonia);
 
         Result result = direccionJPADAOImplementation.UpdateDireccion(direccion, idUsuario);
-        return result;  // ⭐ RETORNAR DIRECTAMENTE EL RESULT
+        return result;  
         
     } catch (Exception ex) {
         Result result = new Result();
@@ -547,7 +525,7 @@ public Result AddDireccion(
         direccion.setColonia(colonia);
 
         Result result = direccionJPADAOImplementation.AddDireccion(direccion, idUsuario);
-        return result;  // ⭐ RETORNAR DIRECTAMENTE EL RESULT
+        return result;  
         
     } catch (Exception ex) {
         Result result = new Result();

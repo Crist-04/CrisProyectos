@@ -40,7 +40,6 @@ public class UsuarioJPADAOImplementation implements IUsuarioJPA {
                     UsuarioJPA.class
             );
             List<UsuarioJPA> usuariosJPA = query.getResultList();
-// JPA ML , para llenar lista de usuarios
             List<Usuario> usuariosML = usuariosJPA.stream()
                     .map(jpa -> modelMapper.map(jpa, Usuario.class))
                     .collect(Collectors.toList());

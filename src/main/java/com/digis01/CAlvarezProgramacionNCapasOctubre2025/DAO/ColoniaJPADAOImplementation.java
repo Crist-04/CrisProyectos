@@ -25,16 +25,13 @@ public class ColoniaJPADAOImplementation {
         Result result = new Result();
         
         try {
-            System.out.println("=== Buscando colonias para municipio: " + idMunicipio + " ===");
             
-            // Como tus campos son públicos, Hibernate usa el nombre del campo directamente
             String jpql = "SELECT c FROM ColoniaJPA c WHERE c.MunicipioJPA.IdMunicipio = :idMunicipio";
             TypedQuery<ColoniaJPA> query = entityManager.createQuery(jpql, ColoniaJPA.class);
             query.setParameter("idMunicipio", idMunicipio);
             
             List<ColoniaJPA> coloniasJPA = query.getResultList();
             
-            System.out.println("✅ Colonias encontradas: " + coloniasJPA.size());
             
             result.objects = coloniasJPA.stream()
                     .map(coloniaJPA -> modelMapper.map(coloniaJPA, Colonia.class))
@@ -43,7 +40,6 @@ public class ColoniaJPADAOImplementation {
             result.correct = true;
             
         } catch (Exception ex) {
-            System.err.println("❌ Error en GetByIdMunicipio: " + ex.getMessage());
             ex.printStackTrace();
             
             result.correct = false;

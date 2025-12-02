@@ -25,28 +25,22 @@ public class EstadoDAOJPAImplementation {
         Result result = new Result();
         
         try {
-            System.out.println("=== Buscando estados para país: " + idPais + " ===");
             
-            // ⭐ CAMBIO: Usar el nombre correcto de la propiedad (PaisJPA con mayúscula)
             String jpql = "SELECT e FROM EstadoJPA e WHERE e.PaisJPA.IdPais = :idPais";
             TypedQuery<EstadoJPA> query = entityManager.createQuery(jpql, EstadoJPA.class);
             query.setParameter("idPais", idPais);
             
             List<EstadoJPA> estadosJPA = query.getResultList();
             
-            System.out.println("Estados encontrados: " + estadosJPA.size());
             
-            // Convertir a ML
             result.objects = estadosJPA.stream()
                     .map(estadoJPA -> modelMapper.map(estadoJPA, Estado.class))
                     .collect(Collectors.toList());
             
             result.correct = true;
             
-            System.out.println("✅ Estados convertidos correctamente");
             
         } catch (Exception ex) {
-            System.err.println("❌ Error en GetByIdPais: " + ex.getMessage());
             ex.printStackTrace();
             
             result.correct = false;
