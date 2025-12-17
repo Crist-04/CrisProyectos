@@ -7,7 +7,7 @@
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <title>Detalle de Usuario</title>
         <meta name="_csrf" th:content="${_csrf.token}"/>
-    <meta name="_csrf_header" th:content="${_csrf.headerName}"/>
+        <meta name="_csrf_header" th:content="${_csrf.headerName}"/>
 
     <th:block layout:fragment="extra-css">
         <style>
@@ -542,91 +542,91 @@
 
         <!-- estas son para direcciones -->
         <!-- estas son para direcciones -->
-<div class="card-custom" style="max-height: 500px; overflow-y: auto;">
-    <div class="card-header-custom">
-        <i class="bi bi-geo-alt-fill"></i>
-        <span>Direcciones Registradas</span>
-    </div>
+        <div class="card-custom" style="max-height: 500px; overflow-y: auto;">
+            <div class="card-header-custom">
+                <i class="bi bi-geo-alt-fill"></i>
+                <span>Direcciones Registradas</span>
+            </div>
 
-    <div class="card-body-custom">
-        <!-- Botón agregar dirección -->
-        <div class="text-center mb-3">
-            <button type="button" 
-                    class="btn btn-success-custom btn-custom"
-                    th:onclick="'prepararModalAgregar(' + ${usuario.idUsuario} + ')'">
-                <i class="bi bi-plus-square-fill"></i> Agregar Nueva Dirección
-            </button>
+            <div class="card-body-custom">
+                <!-- Botón agregar dirección -->
+                <div class="text-center mb-3">
+                    <button type="button" 
+                            class="btn btn-success-custom btn-custom"
+                            th:onclick="'prepararModalAgregar(' + ${usuario.idUsuario} + ')'">
+                        <i class="bi bi-plus-square-fill"></i> Agregar Nueva Dirección
+                    </button>
+                </div>
+
+                <!-- Tabla de direcciones -->
+                <div th:if="${usuario.direcciones != null and !usuario.direcciones.isEmpty()}">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th class="col-1">#</th>
+                                <th class="col-5">Dirección Completa</th>
+                                <th class="col-2">Código Postal</th>
+                                <th class="col-4 text-center">Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr th:each="direccion, iterStat : ${usuario.direcciones}">
+                                <td th:text="${iterStat.count}">1</td>
+                                <td>
+                                    <strong th:text="${direccion.calle}">Calle</strong><br>
+                                    <small class="text-muted">
+                                        No. Ext: <span th:text="${direccion.numeroExterior}">123</span>
+                                        <span th:if="${direccion.numeroInterior != null and !direccion.numeroInterior.isEmpty()}">
+                                            , Int: <span th:text="${direccion.numeroInterior}">A</span>
+                                        </span>
+                                    </small><br>
+                                    <small class="text-muted">
+                                        <span th:text="${direccion.colonia.nombre}">Colonia</span>,
+                                        <span th:text="${direccion.colonia.municipio.nombre}">Municipio</span>,
+                                        <span th:text="${direccion.colonia.municipio.estado.nombre}">Estado</span>
+                                    </small>
+                                </td>
+                                <td>
+                                    <span class="badge bg-info" th:text="${direccion.colonia.codigoPostal}">00000</span>
+                                </td>
+                                <td class="text-center">
+                                    <div class="btn-group btn-group-sm" role="group">
+                                        <button type="button" 
+                                                class="btn btn-primary-custom btn-sm"
+                                                th:attr="
+                                                data-id=${direccion.idDireccion},
+                                                data-calle=${direccion.calle},
+                                                data-numeroext=${direccion.numeroExterior},
+                                                data-numeroint=${direccion.numeroInterior},
+                                                data-colonia=${direccion.colonia.idColonia},
+                                                data-municipio=${direccion.colonia.municipio.idMunicipio},
+                                                data-estado=${direccion.colonia.municipio.estado.idEstado},
+                                                data-idusuario=${usuario.idUsuario}"
+                                                onclick="editarDireccion(this)">
+                                            <i class="bi bi-pencil"></i> Editar
+                                        </button>
+
+                                        <button type="button" 
+                                                class="btn btn-danger-custom btn-sm"
+                                                th:onclick="'eliminarDireccion(' + ${direccion.idDireccion} + ',' + ${usuario.idUsuario} + ')'">
+                                            <i class="bi bi-trash"></i> Eliminar
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Mensaje cuando no hay direcciones -->
+                <div th:if="${usuario.direcciones == null or usuario.direcciones.isEmpty()}" 
+                     class="no-addresses">
+                    <i class="bi bi-house-x"></i>
+                    <h5>No hay direcciones registradas</h5>
+                    <p class="text-muted">Haz clic en "Agregar Nueva Dirección" para comenzar</p>
+                </div>
+            </div>
         </div>
-
-        <!-- Tabla de direcciones -->
-        <div th:if="${usuario.direcciones != null and !usuario.direcciones.isEmpty()}">
-            <table class="table table-hover">
-                <thead>
-                    <tr>
-                        <th class="col-1">#</th>
-                        <th class="col-5">Dirección Completa</th>
-                        <th class="col-2">Código Postal</th>
-                        <th class="col-4 text-center">Acciones</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr th:each="direccion, iterStat : ${usuario.direcciones}">
-                        <td th:text="${iterStat.count}">1</td>
-                        <td>
-                            <strong th:text="${direccion.calle}">Calle</strong><br>
-                            <small class="text-muted">
-                                No. Ext: <span th:text="${direccion.numeroExterior}">123</span>
-                                <span th:if="${direccion.numeroInterior != null and !direccion.numeroInterior.isEmpty()}">
-                                    , Int: <span th:text="${direccion.numeroInterior}">A</span>
-                                </span>
-                            </small><br>
-                            <small class="text-muted">
-                                <span th:text="${direccion.colonia.nombre}">Colonia</span>,
-                                <span th:text="${direccion.colonia.municipio.nombre}">Municipio</span>,
-                                <span th:text="${direccion.colonia.municipio.estado.nombre}">Estado</span>
-                            </small>
-                        </td>
-                        <td>
-                            <span class="badge bg-info" th:text="${direccion.colonia.codigoPostal}">00000</span>
-                        </td>
-                        <td class="text-center">
-                            <div class="btn-group btn-group-sm" role="group">
-                                <button type="button" 
-                                        class="btn btn-primary-custom btn-sm"
-                                        th:attr="
-                                            data-id=${direccion.idDireccion},
-                                            data-calle=${direccion.calle},
-                                            data-numeroext=${direccion.numeroExterior},
-                                            data-numeroint=${direccion.numeroInterior},
-                                            data-colonia=${direccion.colonia.idColonia},
-                                            data-municipio=${direccion.colonia.municipio.idMunicipio},
-                                            data-estado=${direccion.colonia.municipio.estado.idEstado},
-                                            data-idusuario=${usuario.idUsuario}"
-                                        onclick="editarDireccion(this)">
-                                    <i class="bi bi-pencil"></i> Editar
-                                </button>
-
-                                <button type="button" 
-                                        class="btn btn-danger-custom btn-sm"
-                                        th:onclick="'eliminarDireccion(' + ${direccion.idDireccion} + ',' + ${usuario.idUsuario} + ')'">
-                                    <i class="bi bi-trash"></i> Eliminar
-                                </button>
-                            </div>
-                        </td>
-                    </tr>
-                </tbody>
-            </table>
-        </div>
-
-        <!-- Mensaje cuando no hay direcciones -->
-        <div th:if="${usuario.direcciones == null or usuario.direcciones.isEmpty()}" 
-             class="no-addresses">
-            <i class="bi bi-house-x"></i>
-            <h5>No hay direcciones registradas</h5>
-            <p class="text-muted">Haz clic en "Agregar Nueva Dirección" para comenzar</p>
-        </div>
-    </div>
-</div>
     </div>
 
 
@@ -712,379 +712,324 @@
     </div>  
 
 
-   <!-- funciones para desbloquear los inputs y botones de direcciones -->
 <th:block layout:fragment="extra-scripts">
     <script>
-// ⭐ FUNCIÓN MEJORADA para manejar propiedades con mayúsculas
-function getPropertyValue(obj, propName) {
-    if (!obj) return undefined;
-    
-    // Intenta con el nombre original
-    if (obj[propName] !== undefined) return obj[propName];
-    
-    // Intenta capitalizando la primera letra (IdEstado, Nombre, etc.)
-    const capitalizedProp = propName.charAt(0).toUpperCase() + propName.slice(1);
-    if (obj[capitalizedProp] !== undefined) return obj[capitalizedProp];
-    
-    // Intenta con minúsculas
-    const lowerProp = propName.toLowerCase();
-    if (obj[lowerProp] !== undefined) return obj[lowerProp];
-    
-    return undefined;
-}
+        function getPropertyValue(obj, propName) {
+            if (!obj)
+                return undefined;
 
-// ===== FUNCIONES PARA EL MODAL =====
+            if (obj[propName] !== undefined)
+                return obj[propName];
 
-function prepararModalAgregar(idUsuario) {
-    console.log('📝 Preparando modal para agregar dirección');
-    
-    $("#modalAgregarDireccionLabel").html('<i class="bi bi-plus-circle"></i> Agregar Nueva Dirección');
-    
-    // Remover campo oculto de edición si existe
-    if ($("#idDireccionModal").length) {
-        $("#idDireccionModal").remove();
-    }
-    
-    // Limpiar formulario
-    $("#idUsuarioModal").val(idUsuario);
-    $("#modalCalle").val("");
-    $("#modalNumeroExterior").val("");
-    $("#modalNumeroInterior").val("");
-    $("#modalCodigoPostal").val("");
-    
-    // Resetear dropdowns
-    $("#modalPais").val("1");
-    $("#modalEstado").html("<option value='0'>Selecciona un estado</option>");
-    $("#modalMunicipio").html("<option value='0'>Selecciona un municipio</option>");
-    $("#modalColonia").html("<option value='0'>Selecciona una colonia</option>");
-    
-    // Cargar estados y configurar eventos
-    cargarEstadosModal();
-    configurarEventosModal();
-    
-    // Mostrar modal
-    var modal = new bootstrap.Modal(document.getElementById('modalAgregarDireccion'));
-    modal.show();
-}
+            const capitalizedProp = propName.charAt(0).toUpperCase() + propName.slice(1);
+            if (obj[capitalizedProp] !== undefined)
+                return obj[capitalizedProp];
 
-function editarDireccion(btn) {
-    console.log('✏️ Preparando modal para editar dirección');
-    
-    const idDireccion = btn.dataset.id;
-    const calle = btn.dataset.calle;
-    const numExt = btn.dataset.numeroext;
-    const numInt = btn.dataset.numeroint;
-    const idColonia = btn.dataset.colonia;
-    const idMunicipio = btn.dataset.municipio;
-    const idEstado = btn.dataset.estado;
-    const idUsuario = btn.dataset.idusuario;
-    
-    console.log('Datos a editar:', {idDireccion, calle, numExt, idEstado, idMunicipio, idColonia});
-    
-    $("#modalAgregarDireccionLabel").html('<i class="bi bi-pencil-square"></i> Editar Dirección');
-    
-    // Crear campo oculto para el ID de dirección
-    if (!$("#idDireccionModal").length) {
-        const input = $('<input type="hidden" id="idDireccionModal" name="idDireccion">');
-        $("#formAgregarDireccion").append(input);
-    }
-    
-    $("#idDireccionModal").val(idDireccion);
-    $("#idUsuarioModal").val(idUsuario);
-    $("#modalCalle").val(calle);
-    $("#modalNumeroExterior").val(numExt);
-    $("#modalNumeroInterior").val(numInt || '');
-    
-    // Cargar cascada con valores actuales
-    $("#modalPais").val("1");
-    cargarEstadosModal(idEstado, idMunicipio, idColonia);
-    configurarEventosModal();
-    
-    var modal = new bootstrap.Modal(document.getElementById('modalAgregarDireccion'));
-    modal.show();
-}
+            const lowerProp = propName.toLowerCase();
+            if (obj[lowerProp] !== undefined)
+                return obj[lowerProp];
 
-function cargarEstadosModal(idEstadoActual = null, idMunicipioActual = null, idColoniaActual = null) {
-    console.log('🌎 Cargando estados en modal...');
-    
-    $.ajax({
-        type: 'GET',
-        url: "/usuario/estado/1",
-        dataType: "json",
-        success: function(data) {
-            console.log('✅ Estados recibidos:', data);
-            
-            const ddlEstado = $("#modalEstado");
-            ddlEstado.empty().append("<option value='0'>Selecciona un estado</option>");
-            
-            // ⭐ MANEJO CORRECTO de la respuesta (objects o object)
-            const estados = data.objects || data.object || [];
-            
-            if (estados.length > 0) {
-                $.each(estados, function(i, estado) {
-                    const idEstado = getPropertyValue(estado, 'idEstado');
-                    const nombre = getPropertyValue(estado, 'nombre');
-                    ddlEstado.append(`<option value="${idEstado}">${nombre}</option>`);
-                });
-                
-                // Si hay un estado actual, seleccionarlo y cargar sus municipios
-                if (idEstadoActual && idEstadoActual != 0) {
-                    ddlEstado.val(idEstadoActual);
-                    cargarMunicipiosModal(idEstadoActual, idMunicipioActual, idColoniaActual);
-                }
-            } else {
-                console.warn('⚠️ No se recibieron estados');
-            }
-        },
-        error: function(xhr, status, error) {
-            console.error('❌ Error cargando estados:', error);
-            Swal.fire('Error', 'No se pudieron cargar los estados', 'error');
+            return undefined;
         }
-    });
-}
 
-function cargarMunicipiosModal(idEstado, idMunicipioActual = null, idColoniaActual = null) {
-    console.log('🏙️ Cargando municipios para estado:', idEstado);
-    
-    $.ajax({
-        type: 'GET',
-        url: "/usuario/municipio/" + idEstado,
-        dataType: "json",
-        success: function(data) {
-            console.log('✅ Municipios recibidos:', data);
-            
-            const ddlMunicipio = $("#modalMunicipio");
-            ddlMunicipio.empty().append("<option value='0'>Selecciona un municipio</option>");
-            
-            // ⭐ MANEJO CORRECTO de la respuesta
-            const municipios = data.objects || data.object || [];
-            
-            if (municipios.length > 0) {
-                $.each(municipios, function(i, municipio) {
-                    const idMunicipio = getPropertyValue(municipio, 'idMunicipio');
-                    const nombre = getPropertyValue(municipio, 'nombre');
-                    ddlMunicipio.append(`<option value="${idMunicipio}">${nombre}</option>`);
-                });
-                
-                // Si hay un municipio actual, seleccionarlo y cargar sus colonias
-                if (idMunicipioActual && idMunicipioActual != 0) {
-                    ddlMunicipio.val(idMunicipioActual);
-                    cargarColoniasModal(idMunicipioActual, idColoniaActual);
-                }
+
+        function prepararModalAgregar(idUsuario) {
+
+            $("#modalAgregarDireccionLabel").html('<i class="bi bi-plus-circle"></i> Agregar Nueva Dirección');
+
+            if ($("#idDireccionModal").length) {
+                $("#idDireccionModal").remove();
             }
-        },
-        error: function(xhr, status, error) {
-            console.error('❌ Error cargando municipios:', error);
-            Swal.fire('Error', 'No se pudieron cargar los municipios', 'error');
-        }
-    });
-}
 
-function cargarColoniasModal(idMunicipio, idColoniaActual = null) {
-    console.log('🏘️ Cargando colonias para municipio:', idMunicipio);
-    
-    $.ajax({
-        type: 'GET',
-        url: "/usuario/colonia/" + idMunicipio,
-        dataType: "json",
-        success: function(data) {
-            console.log('✅ Colonias recibidas:', data);
-            
-            const ddlColonia = $("#modalColonia");
-            ddlColonia.empty().append("<option value='0'>Selecciona una colonia</option>");
-            
-            // ⭐ MANEJO CORRECTO de la respuesta
-            const colonias = data.objects || data.object || [];
-            
-            if (colonias.length > 0) {
-                // Guardar colonias para obtener código postal
-                window.coloniasCargadas = colonias;
-                
-                $.each(colonias, function(i, colonia) {
-                    const idColonia = getPropertyValue(colonia, 'idColonia');
-                    const nombre = getPropertyValue(colonia, 'nombre');
-                    ddlColonia.append(`<option value="${idColonia}">${nombre}</option>`);
-                });
-                
-                // Si hay una colonia actual, seleccionarla
-                if (idColoniaActual && idColoniaActual != 0) {
-                    ddlColonia.val(idColoniaActual);
-                    
-                    // Cargar código postal de la colonia seleccionada
-                    const coloniaSeleccionada = colonias.find(c => 
-                        getPropertyValue(c, 'idColonia') == idColoniaActual
+            $("#idUsuarioModal").val(idUsuario);
+            $("#modalCalle").val("");
+            $("#modalNumeroExterior").val("");
+            $("#modalNumeroInterior").val("");
+            $("#modalCodigoPostal").val("");
+
+            $("#modalPais").val("1");
+            $("#modalEstado").html("<option value='0'>Selecciona un estado</option>");
+            $("#modalMunicipio").html("<option value='0'>Selecciona un municipio</option>");
+            $("#modalColonia").html("<option value='0'>Selecciona una colonia</option>");
+
+            cargarEstadosModal();
+            configurarEventosModal();
+
+            var modal = new bootstrap.Modal(document.getElementById('modalAgregarDireccion'));
+            modal.show();
+        }
+
+        function editarDireccion(btn) {
+
+            const idDireccion = btn.dataset.id;
+            const calle = btn.dataset.calle;
+            const numExt = btn.dataset.numeroext;
+            const numInt = btn.dataset.numeroint;
+            const idColonia = btn.dataset.colonia;
+            const idMunicipio = btn.dataset.municipio;
+            const idEstado = btn.dataset.estado;
+            const idUsuario = btn.dataset.idusuario;
+
+            console.log('Datos a editar:', {idDireccion, calle, numExt, idEstado, idMunicipio, idColonia});
+
+            $("#modalAgregarDireccionLabel").html('<i class="bi bi-pencil-square"></i> Editar Dirección');
+
+            if (!$("#idDireccionModal").length) {
+                const input = $('<input type="hidden" id="idDireccionModal" name="idDireccion">');
+                $("#formAgregarDireccion").append(input);
+            }
+
+            $("#idDireccionModal").val(idDireccion);
+            $("#idUsuarioModal").val(idUsuario);
+            $("#modalCalle").val(calle);
+            $("#modalNumeroExterior").val(numExt);
+            $("#modalNumeroInterior").val(numInt || '');
+
+            $("#modalPais").val("1");
+            cargarEstadosModal(idEstado, idMunicipio, idColonia);
+            configurarEventosModal();
+
+            var modal = new bootstrap.Modal(document.getElementById('modalAgregarDireccion'));
+            modal.show();
+        }
+
+        function cargarEstadosModal(idEstadoActual = null, idMunicipioActual = null, idColoniaActual = null) {
+
+            $.ajax({
+                type: 'GET',
+                url: "/usuario/estado/1",
+                dataType: "json",
+                success: function (data) {
+
+                    const ddlEstado = $("#modalEstado");
+                    ddlEstado.empty().append("<option value='0'>Selecciona un estado</option>");
+
+                    const estados = data.objects || data.object || [];
+
+                    if (estados.length > 0) {
+                        $.each(estados, function (i, estado) {
+                            const idEstado = getPropertyValue(estado, 'idEstado');
+                            const nombre = getPropertyValue(estado, 'nombre');
+                            ddlEstado.append(`<option value="${idEstado}">${nombre}</option>`);
+                        });
+
+                        if (idEstadoActual && idEstadoActual != 0) {
+                            ddlEstado.val(idEstadoActual);
+                            cargarMunicipiosModal(idEstadoActual, idMunicipioActual, idColoniaActual);
+                        }
+                    }
+                },
+                error: function (xhr, status, error) {
+                    Swal.fire('Error', 'No se pudieron cargar los estados', 'error');
+                }
+            });
+        }
+
+        function cargarMunicipiosModal(idEstado, idMunicipioActual = null, idColoniaActual = null) {
+
+            $.ajax({
+                type: 'GET',
+                url: "/usuario/municipio/" + idEstado,
+                dataType: "json",
+                success: function (data) {
+
+                    const ddlMunicipio = $("#modalMunicipio");
+                    ddlMunicipio.empty().append("<option value='0'>Selecciona un municipio</option>");
+
+                    const municipios = data.objects || data.object || [];
+
+                    if (municipios.length > 0) {
+                        $.each(municipios, function (i, municipio) {
+                            const idMunicipio = getPropertyValue(municipio, 'idMunicipio');
+                            const nombre = getPropertyValue(municipio, 'nombre');
+                            ddlMunicipio.append(`<option value="${idMunicipio}">${nombre}</option>`);
+                        });
+
+                        if (idMunicipioActual && idMunicipioActual != 0) {
+                            ddlMunicipio.val(idMunicipioActual);
+                            cargarColoniasModal(idMunicipioActual, idColoniaActual);
+                        }
+                    }
+                },
+                error: function (xhr, status, error) {
+                    Swal.fire('Error', 'No se pudieron cargar los municipios', 'error');
+                }
+            });
+        }
+
+        function cargarColoniasModal(idMunicipio, idColoniaActual = null) {
+
+            $.ajax({
+                type: 'GET',
+                url: "/usuario/colonia/" + idMunicipio,
+                dataType: "json",
+                success: function (data) {
+
+                    const ddlColonia = $("#modalColonia");
+                    ddlColonia.empty().append("<option value='0'>Selecciona una colonia</option>");
+
+                    const colonias = data.objects || data.object || [];
+
+                    if (colonias.length > 0) {
+                        window.coloniasCargadas = colonias;
+
+                        $.each(colonias, function (i, colonia) {
+                            const idColonia = getPropertyValue(colonia, 'idColonia');
+                            const nombre = getPropertyValue(colonia, 'nombre');
+                            ddlColonia.append(`<option value="${idColonia}">${nombre}</option>`);
+                        });
+
+                        if (idColoniaActual && idColoniaActual != 0) {
+                            ddlColonia.val(idColoniaActual);
+
+                            const coloniaSeleccionada = colonias.find(c =>
+                                getPropertyValue(c, 'idColonia') == idColoniaActual
+                            );
+
+                            if (coloniaSeleccionada) {
+                                const cp = getPropertyValue(coloniaSeleccionada, 'codigoPostal');
+                                $("#modalCodigoPostal").val(cp);
+                            }
+                        }
+                    }
+                },
+                error: function (xhr, status, error) {
+                    Swal.fire('Error', 'No se pudieron cargar las colonias', 'error');
+                }
+            });
+        }
+
+        function configurarEventosModal() {
+
+            $("#modalEstado").off('change').on('change', function () {
+                const idEstado = $(this).val();
+                console.log('Estado cambiado a:', idEstado);
+
+                if (idEstado != "0") {
+                    cargarMunicipiosModal(idEstado);
+                } else {
+                    $("#modalMunicipio").html("<option value='0'>Selecciona un municipio</option>");
+                    $("#modalColonia").html("<option value='0'>Selecciona una colonia</option>");
+                    $("#modalCodigoPostal").val("");
+                }
+            });
+
+            $("#modalMunicipio").off('change').on('change', function () {
+                const idMunicipio = $(this).val();
+                console.log('Municipio cambiado a:', idMunicipio);
+
+                if (idMunicipio != "0") {
+                    cargarColoniasModal(idMunicipio);
+                } else {
+                    $("#modalColonia").html("<option value='0'>Selecciona una colonia</option>");
+                    $("#modalCodigoPostal").val("");
+                }
+            });
+
+            $("#modalColonia").off('change').on('change', function () {
+                const idColonia = parseInt($(this).val());
+                console.log('Colonia cambiada a:', idColonia);
+
+                if (idColonia && idColonia != 0 && window.coloniasCargadas) {
+                    const coloniaSeleccionada = window.coloniasCargadas.find(c =>
+                        getPropertyValue(c, 'idColonia') == idColonia
                     );
-                    
+
                     if (coloniaSeleccionada) {
                         const cp = getPropertyValue(coloniaSeleccionada, 'codigoPostal');
                         $("#modalCodigoPostal").val(cp);
+                        console.log('Código postal:', cp);
                     }
+                } else {
+                    $("#modalCodigoPostal").val("");
                 }
-            }
-        },
-        error: function(xhr, status, error) {
-            console.error('❌ Error cargando colonias:', error);
-            Swal.fire('Error', 'No se pudieron cargar las colonias', 'error');
-        }
-    });
-}
-
-function configurarEventosModal() {
-    console.log('⚙️ Configurando eventos del modal');
-    
-    // EVENTO: Cambio de Estado
-    $("#modalEstado").off('change').on('change', function() {
-        const idEstado = $(this).val();
-        console.log('Estado cambiado a:', idEstado);
-        
-        if (idEstado != "0") {
-            cargarMunicipiosModal(idEstado);
-        } else {
-            $("#modalMunicipio").html("<option value='0'>Selecciona un municipio</option>");
-            $("#modalColonia").html("<option value='0'>Selecciona una colonia</option>");
-            $("#modalCodigoPostal").val("");
-        }
-    });
-    
-    // EVENTO: Cambio de Municipio
-    $("#modalMunicipio").off('change').on('change', function() {
-        const idMunicipio = $(this).val();
-        console.log('Municipio cambiado a:', idMunicipio);
-        
-        if (idMunicipio != "0") {
-            cargarColoniasModal(idMunicipio);
-        } else {
-            $("#modalColonia").html("<option value='0'>Selecciona una colonia</option>");
-            $("#modalCodigoPostal").val("");
-        }
-    });
-    
-    // EVENTO: Cambio de Colonia (actualizar código postal)
-    $("#modalColonia").off('change').on('change', function() {
-        const idColonia = parseInt($(this).val());
-        console.log('Colonia cambiada a:', idColonia);
-        
-        if (idColonia && idColonia != 0 && window.coloniasCargadas) {
-            const coloniaSeleccionada = window.coloniasCargadas.find(c => 
-                getPropertyValue(c, 'idColonia') == idColonia
-            );
-            
-            if (coloniaSeleccionada) {
-                const cp = getPropertyValue(coloniaSeleccionada, 'codigoPostal');
-                $("#modalCodigoPostal").val(cp);
-                console.log('Código postal:', cp);
-            }
-        } else {
-            $("#modalCodigoPostal").val("");
-        }
-    });
-}
-
-function guardarNuevaDireccionModal() {
-    const idDireccion = $("#idDireccionModal").val();
-    const calle = $("#modalCalle").val().trim();
-    const numeroExterior = $("#modalNumeroExterior").val().trim();
-    const numeroInterior = $("#modalNumeroInterior").val().trim();
-    const idColonia = $("#modalColonia").val();
-    const idUsuario = $("#idUsuarioModal").val();
-    
-    console.log('📋 Datos a enviar:', {
-        idDireccion, 
-        calle, 
-        numeroExterior, 
-        numeroInterior, 
-        idColonia, 
-        idUsuario
-    });
-    
-    // Validaciones
-    if (!calle || !numeroExterior || !idColonia || idColonia == "0") {
-        Swal.fire({
-            title: 'Campos incompletos',
-            text: 'Por favor completa todos los campos obligatorios',
-            icon: 'warning'
-        });
-        return;
-    }
-    
-    // ⭐ OBTENER TOKEN CSRF
-    const token = $("meta[name='_csrf']").attr("content");
-    const header = $("meta[name='_csrf_header']").attr("content");
-    
-    // Preparar datos
-    const datos = {
-        idUsuario: idUsuario,
-        calle: calle,
-        numeroExterior: numeroExterior,
-        numeroInterior: numeroInterior || '',
-        'colonia.idColonia': idColonia
-    };
-    
-    // Si es edición, agregar idDireccion
-    if (idDireccion) {
-        datos.idDireccion = idDireccion;
-    }
-    
-    console.log('📤 Enviando datos:', datos);
-    
-    // Determinar URL
-    const url = idDireccion ? '/usuario/direccion/update' : '/usuario/direccion/add';
-    
-    // Cerrar modal
-    const modal = bootstrap.Modal.getInstance(document.getElementById('modalAgregarDireccion'));
-    modal.hide();
-    
-    // Mostrar loading
-    Swal.fire({
-        title: idDireccion ? 'Actualizando...' : 'Guardando...',
-        text: 'Por favor espera',
-        allowOutsideClick: false,
-        didOpen: () => Swal.showLoading()
-    });
-    
-    // Enviar petición
-    $.ajax({
-        type: 'POST',
-        url: url,
-        data: datos,
-        dataType: 'json',
-        // ⭐ AGREGAR HEADERS CON TOKEN CSRF
-        beforeSend: function(xhr) {
-            xhr.setRequestHeader(header, token);
-        },
-        success: function(response) {
-            console.log('✅ Respuesta del servidor:', response);
-            
-            if (response.correct === true || response.correct === 'true') {
-                Swal.fire({
-                    title: '¡Éxito!',
-                    text: response.errorMessage || (idDireccion ? 'Dirección actualizada correctamente' : 'Dirección agregada correctamente'),
-                    icon: 'success',
-                    timer: 1500,
-                    showConfirmButton: false
-                }).then(() => {
-                    location.reload();
-                });
-            } else {
-                Swal.fire({
-                    title: 'Error',
-                    text: response.errorMessage || 'No se pudo guardar la dirección',
-                    icon: 'error'
-                });
-            }
-        },
-        error: function(xhr, status, error) {
-            console.error('❌ Error AJAX:', {xhr, status, error});
-            console.error('❌ Respuesta del servidor:', xhr.responseText);
-            
-            Swal.fire({
-                title: 'Error',
-                text: 'No se pudo guardar la dirección: ' + error,
-                icon: 'error'
             });
         }
-    });
-}
+
+        function guardarNuevaDireccionModal() {
+            const idDireccion = $("#idDireccionModal").val();
+            const calle = $("#modalCalle").val().trim();
+            const numeroExterior = $("#modalNumeroExterior").val().trim();
+            const numeroInterior = $("#modalNumeroInterior").val().trim();
+            const idColonia = $("#modalColonia").val();
+            const idUsuario = $("#idUsuarioModal").val();
+            ;
+
+            if (!calle || !numeroExterior || !idColonia || idColonia == "0") {
+                Swal.fire({
+                    title: 'Campos incompletos',
+                    text: 'Por favor completa todos los campos obligatorios',
+                    icon: 'warning'
+                });
+                return;
+            }
+
+            const token = $("meta[name='_csrf']").attr("content");
+            const header = $("meta[name='_csrf_header']").attr("content");
+
+            const datos = {
+                idUsuario: idUsuario,
+                calle: calle,
+                numeroExterior: numeroExterior,
+                numeroInterior: numeroInterior || '',
+                'colonia.idColonia': idColonia
+            };
+
+            if (idDireccion) {
+                datos.idDireccion = idDireccion;
+            }
+
+
+            const url = idDireccion ? '/usuario/direccion/update' : '/usuario/direccion/add';
+
+            const modal = bootstrap.Modal.getInstance(document.getElementById('modalAgregarDireccion'));
+            modal.hide();
+
+            Swal.fire({
+                title: idDireccion ? 'Actualizando...' : 'Guardando...',
+                text: 'Por favor espera',
+                allowOutsideClick: false,
+                didOpen: () => Swal.showLoading()
+            });
+
+            $.ajax({
+                type: 'POST',
+                url: url,
+                data: datos,
+                dataType: 'json',
+                beforeSend: function (xhr) {
+                    xhr.setRequestHeader(header, token);
+                },
+                success: function (response) {
+
+                    if (response.correct === true || response.correct === 'true') {
+                        Swal.fire({
+                            title: '¡Éxito!',
+                            text: response.errorMessage || (idDireccion ? 'Dirección actualizada correctamente' : 'Dirección agregada correctamente'),
+                            icon: 'success',
+                            timer: 1500,
+                            showConfirmButton: false
+                        }).then(() => {
+                            location.reload();
+                        });
+                    } else {
+                        Swal.fire({
+                            title: 'Error',
+                            text: response.errorMessage || 'No se pudo guardar la dirección',
+                            icon: 'error'
+                        });
+                    }
+                },
+                error: function (xhr, status, error) {
+
+                    Swal.fire({
+                        title: 'Error',
+                        text: 'No se pudo guardar la dirección: ' + error,
+                        icon: 'error'
+                    });
+                }
+            });
+        }
     </script>
 </th:block>
 </body>

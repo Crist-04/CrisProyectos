@@ -5,8 +5,8 @@
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <title>UsuariosIndex</title>
-         <meta name="_csrf" th:content="${_csrf.token}"/>
-    <meta name="_csrf_header" th:content="${_csrf.headerName}"/>
+        <meta name="_csrf" th:content="${_csrf.token}"/>
+        <meta name="_csrf_header" th:content="${_csrf.headerName}"/>
     <th:block layout:fragment="extra-css">
         <style>
             body {
@@ -253,7 +253,7 @@
                         <th>Usuario</th>
                         <th>Datos de contacto</th>
                         <th>Direcciones</th>
-                        <th>Estatus</th> <!-- ← NUEVA COLUMNA -->
+                        <th>Estatus</th> 
                     </tr>
                 </thead>
                 <tbody>
@@ -326,7 +326,6 @@
                             </div>
                         </td>
 
-                        <!-- ← NUEVA COLUMNA DE ESTATUS CON TOGGLE -->
                         <td>
                             <div class="d-flex flex-column align-items-center">
                                 <label class="toggle-switch">
@@ -358,14 +357,12 @@
         });
     </script>
 
-    <!-- ← SCRIPT PARA CAMBIAR EL ESTATUS -->
     <script>
         function cambiarEstatus(checkbox) {
             const usuarioId = checkbox.getAttribute('data-usuario-id');
             const nuevoEstatus = checkbox.checked ? 1 : 0;
             const statusLabel = checkbox.closest('td').querySelector('.status-label');
 
-            // Confirmación con SweetAlert2
             Swal.fire({
                 title: '¿Estás seguro?',
                 text: nuevoEstatus === 1 ?
@@ -379,7 +376,6 @@
                 cancelButtonText: 'Cancelar'
             }).then((result) => {
                 if (result.isConfirmed) {
-                    // Realizar petición AJAX para cambiar el estatus
                     fetch(`/usuario/cambiarEstatus/${usuarioId}/${nuevoEstatus}`, {
                         method: 'POST',
                         headers: {
@@ -388,7 +384,6 @@
                     })
                             .then(response => {
                                 if (response.ok) {
-                                    // Actualizar el texto del label
                                     if (nuevoEstatus === 1) {
                                         statusLabel.textContent = 'Activo';
                                         statusLabel.classList.remove('inactivo');
@@ -411,7 +406,6 @@
                                 }
                             })
                             .catch(error => {
-                                // Revertir el checkbox si hay error
                                 checkbox.checked = !checkbox.checked;
 
                                 Swal.fire({
@@ -421,7 +415,6 @@
                                 });
                             });
                 } else {
-                    // Revertir el checkbox si cancela
                     checkbox.checked = !checkbox.checked;
                 }
             });

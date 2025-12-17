@@ -2,10 +2,10 @@
 <html xmlns:th="http://www.thymeleaf.org"
       xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
       layout:decorate="~{layout}">
-<head>
-    <title>Formulario de Usuario</title>
-    
-    <!-- Estilos específicos de esta página -->
+    <head>
+        <title>Formulario de Usuario</title>
+
+        <!-- Estilos específicos de esta página -->
     <th:block layout:fragment="extra-css">
         <style>
             /* Ajuste para el contenedor principal */
@@ -257,7 +257,7 @@
                     <i class="bi bi-geo-alt-fill"></i>
                     Dirección
                 </div>
-                
+
                 <div class="row g-3 mt-2">
                     <div class="col-md-4">
                         <label for="calle" class="form-label required-field">Calle</label>
@@ -293,7 +293,7 @@
                         <input type="text" class="form-control" id="codigoPostal" placeholder="Se llenará automáticamente" readonly>
                     </div>
                 </div> 
-                
+
                 <div class="row g-3 mt-2">
                     <div class="col-md-6">
                         <label for="numeroExterior" class="form-label required-field">Número Exterior</label>
@@ -329,236 +329,209 @@
             </form>
         </div>
     </div>
-    
-    <!-- Scripts específicos de esta página -->
-    <th:block layout:fragment="extra-scripts">
-        <script>
-// ⭐ FUNCIÓN para manejar propiedades con mayúsculas
-function getPropertyValue(obj, propName) {
-    if (!obj) return undefined;
-    
-    // Intenta con el nombre original
-    if (obj[propName] !== undefined) return obj[propName];
-    
-    // Intenta capitalizando la primera letra
-    const capitalizedProp = propName.charAt(0).toUpperCase() + propName.slice(1);
-    if (obj[capitalizedProp] !== undefined) return obj[capitalizedProp];
-    
-    // Intenta con minúsculas
-    const lowerProp = propName.toLowerCase();
-    if (obj[lowerProp] !== undefined) return obj[lowerProp];
-    
-    return undefined;
-}
 
-$(document).ready(function () {
-    console.log("✅ Scripts del formulario cargados correctamente");
+<th:block layout:fragment="extra-scripts">
+    <script>
+        function getPropertyValue(obj, propName) {
+            if (!obj)
+                return undefined;
 
-    // ===== CARGAR ESTADOS AL SELECCIONAR PAÍS =====
-    $("#ddlpais").change(function () {
-        const idPais = $(this).val();
-        console.log('🌎 País seleccionado:', idPais);
-        
-        if (idPais == "0") {
-            $("#ddlestado").html("<option value='0'>Selecciona un estado</option>");
-            $("#ddlmunicipio").html("<option value='0'>Selecciona un municipio</option>");
-            $("#ddlcolonia").html("<option value='0'>Selecciona una colonia</option>");
-            $("#codigoPostal").val("");
-            return;
-        }
-        
-        $.ajax({
-            type: 'GET',
-            url: "/usuario/estado/" + idPais,
-            dataType: "json",
-            success: function (data) {
-                console.log('✅ Estados recibidos:', data);
-                
-                $("#ddlestado").empty();
-                $("#ddlestado").append("<option value='0'>Selecciona un estado</option>");
-                
-                // ⭐ Manejar objects o object
-                const estados = data.objects || data.object || [];
-                
-                if (estados.length > 0) {
-                    $.each(estados, function (i, estado) {
-                        const idEstado = getPropertyValue(estado, 'idEstado');
-                        const nombre = getPropertyValue(estado, 'nombre');
-                        $("#ddlestado").append(`<option value="${idEstado}">${nombre}</option>`);
-                    });
-                }
-                
-                // Limpiar dropdowns dependientes
-                $("#ddlmunicipio").html("<option value='0'>Selecciona un municipio</option>");
-                $("#ddlcolonia").html("<option value='0'>Selecciona una colonia</option>");
-                $("#codigoPostal").val("");
-            },
-            error: function (xhr, status, error) {
-                console.error('❌ Error cargando estados:', error);
-                alert("No se pudieron cargar los estados");
-            }
-        });
-    });
+            if (obj[propName] !== undefined)
+                return obj[propName];
 
-    // ===== CARGAR MUNICIPIOS AL SELECCIONAR ESTADO =====
-    $("#ddlestado").change(function () {
-        const idEstado = $(this).val();
-        console.log('🏙️ Estado seleccionado:', idEstado);
-        
-        if (idEstado == "0") {
-            $("#ddlmunicipio").html("<option value='0'>Selecciona un municipio</option>");
-            $("#ddlcolonia").html("<option value='0'>Selecciona una colonia</option>");
-            $("#codigoPostal").val("");
-            return;
-        }
-        
-        $.ajax({
-            type: 'GET',
-            url: "/usuario/municipio/" + idEstado,
-            dataType: "json",
-            success: function (data) {
-                console.log('✅ Municipios recibidos:', data);
-                
-                $("#ddlmunicipio").empty();
-                $("#ddlmunicipio").append("<option value='0'>Selecciona un municipio</option>");
-                
-                // ⭐ Manejar objects o object
-                const municipios = data.objects || data.object || [];
-                
-                if (municipios.length > 0) {
-                    $.each(municipios, function (i, municipio) {
-                        const idMunicipio = getPropertyValue(municipio, 'idMunicipio');
-                        const nombre = getPropertyValue(municipio, 'nombre');
-                        $("#ddlmunicipio").append(`<option value="${idMunicipio}">${nombre}</option>`);
-                    });
-                }
-                
-                // Limpiar dropdowns dependientes
-                $("#ddlcolonia").html("<option value='0'>Selecciona una colonia</option>");
-                $("#codigoPostal").val("");
-            },
-            error: function (xhr, status, error) {
-                console.error('❌ Error cargando municipios:', error);
-                alert("No se pudieron cargar los municipios");
-            }
-        });
-    });
+            const capitalizedProp = propName.charAt(0).toUpperCase() + propName.slice(1);
+            if (obj[capitalizedProp] !== undefined)
+                return obj[capitalizedProp];
 
-    // ===== CARGAR COLONIAS AL SELECCIONAR MUNICIPIO =====
-    $("#ddlmunicipio").change(function () {
-        const idMunicipio = $(this).val();
-        console.log('🏘️ Municipio seleccionado:', idMunicipio);
-        
-        if (idMunicipio == "0") {
-            $("#ddlcolonia").html("<option value='0'>Selecciona una colonia</option>");
-            $("#codigoPostal").val("");
-            return;
-        }
-        
-        $.ajax({
-            type: 'GET',
-            url: "/usuario/colonia/" + idMunicipio,
-            dataType: "json",
-            success: function (data) {
-                console.log('✅ Colonias recibidas:', data);
-                
-                $("#ddlcolonia").empty();
-                $("#ddlcolonia").append("<option value='0'>Selecciona una colonia</option>");
-                
-                // ⭐ Manejar objects o object
-                const colonias = data.objects || data.object || [];
-                
-                if (colonias.length > 0) {
-                    // Guardar colonias para obtener código postal después
-                    window.coloniasCargadas = colonias;
-                    
-                    $.each(colonias, function (i, colonia) {
-                        const idColonia = getPropertyValue(colonia, 'idColonia');
-                        const nombre = getPropertyValue(colonia, 'nombre');
-                        $("#ddlcolonia").append(`<option value="${idColonia}">${nombre}</option>`);
-                    });
-                }
-                
-                $("#codigoPostal").val("");
-            },
-            error: function (xhr, status, error) {
-                console.error('❌ Error cargando colonias:', error);
-                alert("No se pudieron cargar las colonias");
-            }
-        });
-    });
+            const lowerProp = propName.toLowerCase();
+            if (obj[lowerProp] !== undefined)
+                return obj[lowerProp];
 
-    // ===== CARGAR CÓDIGO POSTAL AL SELECCIONAR COLONIA =====
-    $("#ddlcolonia").on('blur change', function () {
-        const idColonia = parseInt($(this).val());
-        console.log('📮 Colonia seleccionada:', idColonia);
-        
-        if (idColonia == 0 || !idColonia) {
-            $("#codigoPostal").val("");
-            return;
+            return undefined;
         }
-        
-        // OPCIÓN 1: Usar las colonias ya cargadas (más rápido)
-        if (window.coloniasCargadas) {
-            const coloniaSeleccionada = window.coloniasCargadas.find(c => 
-                getPropertyValue(c, 'idColonia') == idColonia
-            );
-            
-            if (coloniaSeleccionada) {
-                const cp = getPropertyValue(coloniaSeleccionada, 'codigoPostal');
-                $("#codigoPostal").val(cp);
-                console.log('✅ Código postal cargado:', cp);
-                return;
-            }
-        }
-        
-        // OPCIÓN 2: Hacer petición al servidor (fallback)
-        $.ajax({
-            type: 'GET',
-            url: "/usuario/codigopostal/" + idColonia,
-            dataType: "json",
-            success: function (data) {
-                console.log('✅ Código postal recibido:', data);
-                
-                if (data.correct && data.object) {
-                    const cp = getPropertyValue(data.object, 'codigoPostal');
-                    $("#codigoPostal").val(cp);
-                } else {
+
+        $(document).ready(function () {
+
+
+            $("#ddlpais").change(function () {
+                const idPais = $(this).val();
+                console.log('País seleccionado:', idPais);
+
+                if (idPais == "0") {
+                    $("#ddlestado").html("<option value='0'>Selecciona un estado</option>");
+                    $("#ddlmunicipio").html("<option value='0'>Selecciona un municipio</option>");
+                    $("#ddlcolonia").html("<option value='0'>Selecciona una colonia</option>");
                     $("#codigoPostal").val("");
+                    return;
                 }
-            },
-            error: function (xhr, status, error) {
-                console.error('❌ Error cargando código postal:', error);
-                alert("No se pudo cargar el código postal");
-            }
+
+                $.ajax({
+                    type: 'GET',
+                    url: "/usuario/estado/" + idPais,
+                    dataType: "json",
+                    success: function (data) {
+
+                        $("#ddlestado").empty();
+                        $("#ddlestado").append("<option value='0'>Selecciona un estado</option>");
+
+                        const estados = data.objects || data.object || [];
+
+                        if (estados.length > 0) {
+                            $.each(estados, function (i, estado) {
+                                const idEstado = getPropertyValue(estado, 'idEstado');
+                                const nombre = getPropertyValue(estado, 'nombre');
+                                $("#ddlestado").append(`<option value="${idEstado}">${nombre}</option>`);
+                            });
+                        }
+
+                        $("#ddlmunicipio").html("<option value='0'>Selecciona un municipio</option>");
+                        $("#ddlcolonia").html("<option value='0'>Selecciona una colonia</option>");
+                        $("#codigoPostal").val("");
+                    },
+                    error: function (xhr, status, error) {
+                        alert("No se pudieron cargar los estados");
+                    }
+                });
+            });
+
+            $("#ddlestado").change(function () {
+                const idEstado = $(this).val();
+
+                if (idEstado == "0") {
+                    $("#ddlmunicipio").html("<option value='0'>Selecciona un municipio</option>");
+                    $("#ddlcolonia").html("<option value='0'>Selecciona una colonia</option>");
+                    $("#codigoPostal").val("");
+                    return;
+                }
+
+                $.ajax({
+                    type: 'GET',
+                    url: "/usuario/municipio/" + idEstado,
+                    dataType: "json",
+                    success: function (data) {
+
+                        $("#ddlmunicipio").empty();
+                        $("#ddlmunicipio").append("<option value='0'>Selecciona un municipio</option>");
+
+                        const municipios = data.objects || data.object || [];
+
+                        if (municipios.length > 0) {
+                            $.each(municipios, function (i, municipio) {
+                                const idMunicipio = getPropertyValue(municipio, 'idMunicipio');
+                                const nombre = getPropertyValue(municipio, 'nombre');
+                                $("#ddlmunicipio").append(`<option value="${idMunicipio}">${nombre}</option>`);
+                            });
+                        }
+
+                        $("#ddlcolonia").html("<option value='0'>Selecciona una colonia</option>");
+                        $("#codigoPostal").val("");
+                    },
+                    error: function (xhr, status, error) {
+                        alert("No se pudieron cargar los municipios");
+                    }
+                });
+            });
+
+            $("#ddlmunicipio").change(function () {
+                const idMunicipio = $(this).val();
+
+                if (idMunicipio == "0") {
+                    $("#ddlcolonia").html("<option value='0'>Selecciona una colonia</option>");
+                    $("#codigoPostal").val("");
+                    return;
+                }
+
+                $.ajax({
+                    type: 'GET',
+                    url: "/usuario/colonia/" + idMunicipio,
+                    dataType: "json",
+                    success: function (data) {
+
+                        $("#ddlcolonia").empty();
+                        $("#ddlcolonia").append("<option value='0'>Selecciona una colonia</option>");
+
+                        const colonias = data.objects || data.object || [];
+
+                        if (colonias.length > 0) {
+                            window.coloniasCargadas = colonias;
+
+                            $.each(colonias, function (i, colonia) {
+                                const idColonia = getPropertyValue(colonia, 'idColonia');
+                                const nombre = getPropertyValue(colonia, 'nombre');
+                                $("#ddlcolonia").append(`<option value="${idColonia}">${nombre}</option>`);
+                            });
+                        }
+
+                        $("#codigoPostal").val("");
+                    },
+                    error: function (xhr, status, error) {
+                        alert("No se pudieron cargar las colonias");
+                    }
+                });
+            });
+
+            $("#ddlcolonia").on('blur change', function () {
+                const idColonia = parseInt($(this).val());
+
+                if (idColonia == 0 || !idColonia) {
+                    $("#codigoPostal").val("");
+                    return;
+                }
+
+                if (window.coloniasCargadas) {
+                    const coloniaSeleccionada = window.coloniasCargadas.find(c =>
+                        getPropertyValue(c, 'idColonia') == idColonia
+                    );
+
+                    if (coloniaSeleccionada) {
+                        const cp = getPropertyValue(coloniaSeleccionada, 'codigoPostal');
+                        $("#codigoPostal").val(cp);
+                        return;
+                    }
+                }
+
+                $.ajax({
+                    type: 'GET',
+                    url: "/usuario/codigopostal/" + idColonia,
+                    dataType: "json",
+                    success: function (data) {
+
+                        if (data.correct && data.object) {
+                            const cp = getPropertyValue(data.object, 'codigoPostal');
+                            $("#codigoPostal").val(cp);
+                        } else {
+                            $("#codigoPostal").val("");
+                        }
+                    },
+                    error: function (xhr, status, error) {
+                        alert("No se pudo cargar el código postal");
+                    }
+                });
+            });
+
+            let hoy = new Date().toISOString().split('T')[0];
+            $("#fechaNacimiento").attr('max', hoy);
         });
-    });
 
-    // ===== VALIDACIÓN DE FECHA =====
-    let hoy = new Date().toISOString().split('T')[0];
-    $("#fechaNacimiento").attr('max', hoy);
-});
+        function ValidarFecha(input) {
+            let fechaSeleccionada = new Date($(input).val());
+            let fechaActual = new Date();
 
-// ===== FUNCIÓN PARA VALIDAR FECHA =====
-function ValidarFecha(input) {
-    let fechaSeleccionada = new Date($(input).val());
-    let fechaActual = new Date();
+            fechaActual.setHours(0, 0, 0, 0);
+            fechaSeleccionada.setHours(0, 0, 0, 0);
 
-    fechaActual.setHours(0, 0, 0, 0);
-    fechaSeleccionada.setHours(0, 0, 0, 0);
-
-    if ($(input).val() === "") {
-        $(input).removeClass("error").removeClass("correct");
-        $(input).siblings(".error-msg-fecha").text("");
-    } else if (fechaSeleccionada > fechaActual) {
-        $(input).removeClass("correct").addClass("error");
-        $(input).siblings(".error-msg-fecha").text("La fecha no puede ser mayor a la fecha actual");
-    } else {
-        $(input).removeClass("error").addClass("correct");
-        $(input).siblings(".error-msg-fecha").text("");
-    }
-}
-</script>
-    </th:block>
+            if ($(input).val() === "") {
+                $(input).removeClass("error").removeClass("correct");
+                $(input).siblings(".error-msg-fecha").text("");
+            } else if (fechaSeleccionada > fechaActual) {
+                $(input).removeClass("correct").addClass("error");
+                $(input).siblings(".error-msg-fecha").text("La fecha no puede ser mayor a la fecha actual");
+            } else {
+                $(input).removeClass("error").addClass("correct");
+                $(input).siblings(".error-msg-fecha").text("");
+            }
+        }
+    </script>
+</th:block>
 </body>
 </html>
